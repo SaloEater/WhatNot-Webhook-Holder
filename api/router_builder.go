@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -22,19 +23,31 @@ func (rb *RouteBuilder) WrapRoute(route func(w http.ResponseWriter, r *http.Requ
 			err := rb.authenticate(r.BasicAuth())
 			if err != nil {
 				fmt.Println("Failed auth attempt from " + r.Host)
-				w.Write([]byte(err.Error()))
-				w.WriteHeader(http.StatusUnauthorized)
+				formatError(w, err, http.StatusUnauthorized)
 				return
 			}
 		}
 
 		err := route(w, r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			formatError(w, err, http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
 	}
+}
+
+type ResponseError struct {
+	Error string `json:"error"`
+}
+
+func formatError(w http.ResponseWriter, err error, code int) {
+	responseError := ResponseError{Error: err.Error()}
+	encoded, err := json.Marshal(responseError)
+	fmt.Println(string(encoded))
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(encoded)
 }
 
 func (rb *RouteBuilder) authenticate(username string, password string, ok bool) error {

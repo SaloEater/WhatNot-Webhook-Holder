@@ -8,11 +8,33 @@ import (
 	"os"
 )
 
+// CORS middleware handler
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Allow requests from any origin
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		// Allow GET, POST, OPTIONS methods
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
+		// Allow Content-Type header
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == "OPTIONS" {
+			// Preflight request, respond with success
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	routeBuilder := api.RouteBuilder{
 		Username: os.Getenv("Username"),
 		Password: os.Getenv("Password"),
 	}
+
+	handler := corsMiddleware(http.DefaultServeMux)
 
 	http.HandleFunc("/ping", routeBuilder.WrapRoute(func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, "pong")
@@ -32,7 +54,7 @@ func main() {
 	http.HandleFunc("/api/break/set_end_data", routeBuilder.WrapRoute(api.SetBreakEndDate, api.HttpPost, true))
 
 	fmt.Println("Serving on port 5555")
-	err := http.ListenAndServe(":5555", nil)
+	err := http.ListenAndServe(":5555", handler)
 	if err != nil {
 		fmt.Println("An error occurred during listening: " + err.Error())
 	}

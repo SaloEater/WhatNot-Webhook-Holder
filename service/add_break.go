@@ -7,13 +7,13 @@ import (
 )
 
 type AddBreakRequest struct {
-	Year  int32
-	Month int32
-	Day   int32
+	Year  int32 `json:"year"`
+	Month int32 `json:"month"`
+	Day   int32 `json:"day"`
 }
 
 type AddBreadResponse struct {
-	Breaks []string
+	Breaks []string `json:"breaks"`
 }
 
 func AddBreak(r *AddBreakRequest) (*AddBreadResponse, error) {

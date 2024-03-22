@@ -13,7 +13,7 @@ type AddDayRequest struct {
 }
 
 type AddDayResponse struct {
-	Breaks []string
+	Breaks []string `json:"breaks"`
 }
 
 func AddDay(r *AddDayRequest) (*AddDayResponse, error) {

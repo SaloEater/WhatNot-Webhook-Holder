@@ -15,7 +15,7 @@ type AddOutcomeRequest struct {
 }
 
 type AddOutcomeResponse struct {
-	Outcomes []string
+	Outcomes []string `json:"outcomes"`
 }
 
 func ChangeOutcome(r *AddOutcomeRequest) (*AddOutcomeResponse, error) {

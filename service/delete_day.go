@@ -14,7 +14,7 @@ type DeleteDayRequest struct {
 }
 
 type DeleteDayResponse struct {
-	Breaks []string
+	Breaks []string `json:"breaks"`
 }
 
 func DeleteDay(r *DeleteDayRequest) ([]byte, error) {

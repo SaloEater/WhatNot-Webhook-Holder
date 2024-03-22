@@ -13,9 +13,9 @@ const daysFile = "days.json"
 var pwd string
 
 type Date struct {
-	Year  int32
-	Month int32
-	Day   int32
+	Year  int32 `json:"year"`
+	Month int32 `json:"month"`
+	Day   int32 `json:"day"`
 }
 
 type DayData struct {
@@ -25,7 +25,7 @@ type DayData struct {
 }
 
 type GetDaysResponse struct {
-	Days []DayData
+	Days []DayData `json:"days"`
 }
 
 func GetDays() ([]byte, error) {

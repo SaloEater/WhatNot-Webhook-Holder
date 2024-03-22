@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type SetBreakStartDateRequest struct {
@@ -11,11 +12,11 @@ type SetBreakStartDateRequest struct {
 	Month     int32
 	Day       int32
 	Index     int32
-	StartDate int64 `json:"start_date"`
+	StartDate string `json:"start_date"`
 }
 
 type SetBreakStartDateResponse struct {
-	StartDate int64
+	StartDate int64 `json:"start_date"`
 }
 
 func SetBreakStartDate(r *SetBreakStartDateRequest) (*SetBreakStartDateResponse, error) {
@@ -32,7 +33,10 @@ func SetBreakStartDate(r *SetBreakStartDateRequest) (*SetBreakStartDateResponse,
 	}
 
 	oldStartDate := dayBreak.StartDate
-	dayBreak.StartDate = r.StartDate
+	dayBreak.StartDate, err = strconv.ParseInt(r.StartDate, 10, 0)
+	if err != nil {
+		return nil, err
+	}
 	data, err := json.Marshal(dayBreak)
 	response := SetBreakStartDateResponse{StartDate: dayBreak.StartDate}
 

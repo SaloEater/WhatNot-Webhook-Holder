@@ -17,7 +17,7 @@ type DeleteBreakRequest struct {
 }
 
 type DeleteBreakResponse struct {
-	Breaks []string
+	Breaks []string `json:"breaks"`
 }
 
 func DeleteBreak(r *DeleteBreakRequest) (*DeleteBreakResponse, error) {

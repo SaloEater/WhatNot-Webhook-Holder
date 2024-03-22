@@ -42,7 +42,7 @@ func GetBreak(r *GetBreakRequest) ([]byte, error) {
 	breakFilepath := getFilepath(dataDir, createBreakFilename(r.Year, r.Month, r.Day, r.Index))
 	breakData, err := os.ReadFile(breakFilepath)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	return breakData, nil
