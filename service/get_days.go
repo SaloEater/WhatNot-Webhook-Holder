@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"os"
 	"path/filepath"
 )
@@ -11,22 +12,6 @@ const dataDir = "data"
 const daysFile = "days.json"
 
 var pwd string
-
-type Date struct {
-	Year  int32 `json:"year"`
-	Month int32 `json:"month"`
-	Day   int32 `json:"day"`
-}
-
-type DayData struct {
-	Date         Date     `json:"date"`
-	Breaks       []string `json:"breaks"`
-	BreaksAmount int32    `json:"next_break"`
-}
-
-type GetDaysResponse struct {
-	Days []DayData `json:"days"`
-}
 
 func GetDays() ([]byte, error) {
 	var daysJSON []byte
@@ -52,7 +37,7 @@ func getFilepath(dir string, file string) string {
 func ensureFileExists(dir string, file string) error {
 	path := getFilepath(dir, file)
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		emptyDays := GetDaysResponse{}
+		emptyDays := entity.Days{Days: []entity.Day{}}
 		emptyDaysData, err := json.Marshal(emptyDays)
 		if err != nil {
 			return err

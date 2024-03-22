@@ -25,19 +25,11 @@ func SetBreakEndDate(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	response, err := service.SetBreakEndDate(&request)
+	err = service.SetBreakEndDate(&request)
 	if err != nil {
 		fmt.Println("An error occurred during setting end date " + string(body) + ": " + err.Error())
 		return err
 	}
-
-	data, err := json.Marshal(response)
-	if err != nil {
-		fmt.Println("An error occurred during marshalling end date response: " + err.Error())
-		return err
-	}
-
-	w.Write(data)
 
 	return nil
 }

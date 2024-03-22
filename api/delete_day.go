@@ -25,13 +25,11 @@ func DeleteDay(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	data, err := service.DeleteDay(&request)
+	err = service.DeleteDay(&request)
 	if err != nil {
 		fmt.Println("An error occurred during deleting break " + string(body) + ": " + err.Error())
 		return err
 	}
-
-	w.Write(data)
 
 	return nil
 }

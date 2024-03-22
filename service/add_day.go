@@ -3,29 +3,26 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"os"
 )
 
 type AddDayRequest struct {
-	Year  int32
-	Month int32
-	Day   int32
+	Year  int
+	Month int
+	Day   int
 }
 
-type AddDayResponse struct {
-	Breaks []string `json:"breaks"`
-}
-
-func AddDay(r *AddDayRequest) (*AddDayResponse, error) {
+func AddDay(r *AddDayRequest) error {
 	daysData, err := GetDays()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var days GetDaysResponse
+	var days entity.Days
 	err = json.Unmarshal(daysData, &days)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	found := false
@@ -37,11 +34,11 @@ func AddDay(r *AddDayRequest) (*AddDayResponse, error) {
 	}
 
 	if found {
-		return nil, errors.New("day already exists")
+		return errors.New("day already exists")
 	}
 
-	newDay := DayData{
-		Date: Date{
+	newDay := entity.Day{
+		Date: entity.Date{
 			Day:   r.Day,
 			Month: r.Month,
 			Year:  r.Year,
@@ -50,10 +47,10 @@ func AddDay(r *AddDayRequest) (*AddDayResponse, error) {
 	}
 	days.Days = append(days.Days, newDay)
 
-	return &AddDayResponse{Breaks: newDay.Breaks}, updateDaysFile(days)
+	return updateDaysFile(days)
 }
 
-func updateDaysFile(days GetDaysResponse) error {
+func updateDaysFile(days entity.Days) error {
 	daysPath := getFilepath(dataDir, daysFile)
 	daysDataUpdate, err := json.Marshal(days)
 	if err != nil {

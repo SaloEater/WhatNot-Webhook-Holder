@@ -4,76 +4,61 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"os"
-	"strconv"
-	"strings"
 )
 
 type DeleteBreakRequest struct {
-	Year  int32
-	Month int32
-	Day   int32
-	Index int32
+	Year  int
+	Month int
+	Day   int
+	Name  string
 }
 
-type DeleteBreakResponse struct {
-	Breaks []string `json:"breaks"`
-}
-
-func DeleteBreak(r *DeleteBreakRequest) (*DeleteBreakResponse, error) {
+func DeleteBreak(r *DeleteBreakRequest) error {
 	daysData, err := GetDays()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var days GetDaysResponse
+	var days entity.Days
 	err = json.Unmarshal(daysData, &days)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	found := false
-	var breaks []string
+	breakIsMissing := true
 	for i, day := range days.Days {
 		if day.Date.Day == r.Day && day.Date.Month == r.Month && day.Date.Year == r.Year {
 			dayP := &days.Days[i]
-			index := -1
-			for j, dayBreak := range day.Breaks {
-				if getBreakIndexFromFilename(dayBreak) == r.Index {
-					found = true
-					index = j
+			breakIndex := -1
+			for j, breakName := range day.Breaks {
+				if breakName == r.Name {
+					breakIsMissing = false
+					breakIndex = j
 					break
 				}
 			}
 
-			if index != -1 {
-				dayP.Breaks = append(day.Breaks[:index], day.Breaks[index+1:]...)
-				breaks = dayP.Breaks
-				breakFilepath := getFilepath(dataDir, createBreakFilename(r.Year, r.Month, r.Day, r.Index))
-				deleteBreakFilepath := getFilepath(dataDir, createDeletedBreakFilename(r.Year, r.Month, r.Day, r.Index))
-				err2 := os.Rename(breakFilepath, deleteBreakFilepath)
-				if err2 != nil {
-					fmt.Println("An error occurred during deleting break: " + err2.Error())
-				}
+			if breakIndex != -1 {
+				dayP.Breaks = append(day.Breaks[:breakIndex], day.Breaks[breakIndex+1:]...)
+				breakFilepath := getFilepath(dataDir, createBreakFilename(r.Year, r.Month, r.Day, r.Name))
+				deleteBreakFilepath := getFilepath(dataDir, createDeletedBreakFilename(r.Year, r.Month, r.Day, r.Name))
+				err = os.Rename(breakFilepath, deleteBreakFilepath)
 			}
 
 			break
 		}
 	}
 
-	if !found {
-		return nil, errors.New("break is not found")
-	}
-
-	return &DeleteBreakResponse{Breaks: breaks}, updateDaysFile(days)
-}
-
-func getBreakIndexFromFilename(filename string) int32 {
-	filename = strings.Split(filename, ".")[0]
-	stringIndex := strings.Split(filename, "_")[1]
-	index, err := strconv.Atoi(stringIndex)
 	if err != nil {
-		return 999999
+		fmt.Println("An error occurred during deleting break: " + err.Error())
+		return err
 	}
-	return int32(index)
+
+	if breakIsMissing {
+		return errors.New("break is not found")
+	}
+
+	return updateDaysFile(days)
 }

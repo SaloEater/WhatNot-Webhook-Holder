@@ -5,18 +5,22 @@ import (
 	"fmt"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"os"
-	"strconv"
 )
 
-type SetBreakEndDateRequest struct {
-	Year    int
-	Month   int
-	Day     int
-	Name    string
-	EndDate string `json:"end_date"`
+type AddEventRequest struct {
+	Year       int
+	Month      int
+	Day        int
+	Name       string `json:"name"`
+	Customer   string
+	Price      float32
+	Team       string
+	IsGiveaway bool `json:"is_giveaway"`
+	Note       string
+	Quantity   int
 }
 
-func SetBreakEndDate(r *SetBreakEndDateRequest) error {
+func AddEvent(r *AddEventRequest) error {
 	breakFilepath := getFilepath(dataDir, createBreakFilename(r.Year, r.Month, r.Day, r.Name))
 	breakData, err := os.ReadFile(breakFilepath)
 	if err != nil {
@@ -29,20 +33,21 @@ func SetBreakEndDate(r *SetBreakEndDateRequest) error {
 		return err
 	}
 
-	dayBreak.EndDate, err = strconv.ParseInt(r.EndDate, 10, 0)
-	if err != nil {
-		return err
-	}
+	dayBreak.Events = append(dayBreak.Events, entity.Event{
+		Id: RandStringBytes(5),
 
+		Customer:   r.Customer,
+		Price:      r.Price,
+		Team:       r.Customer,
+		IsGiveaway: r.IsGiveaway,
+		Note:       r.Customer,
+		Quantity:   r.Quantity,
+	})
 	data, err := json.Marshal(dayBreak)
-	if err != nil {
-		return err
-	}
-
 	err = os.WriteFile(breakFilepath, data, 0644)
 	if err != nil {
 		fmt.Println("An error occurred during writing writing")
 	}
 
-	return err
+	return nil
 }

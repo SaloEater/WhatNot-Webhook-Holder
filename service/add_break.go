@@ -3,64 +3,72 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"os"
 )
 
 type AddBreakRequest struct {
-	Year  int32 `json:"year"`
-	Month int32 `json:"month"`
-	Day   int32 `json:"day"`
+	Year      int    `json:"year"`
+	Month     int    `json:"month"`
+	Day       int    `json:"day"`
+	Name      string `json:"name"`
+	StartDate int64  `json:"start_date"`
+	EndDate   int64  `json:"end_date"`
 }
 
-type AddBreadResponse struct {
-	Breaks []string `json:"breaks"`
-}
-
-func AddBreak(r *AddBreakRequest) (*AddBreadResponse, error) {
+func AddBreak(r *AddBreakRequest) error {
 	daysData, err := GetDays()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var days GetDaysResponse
+	var days entity.Days
 	err = json.Unmarshal(daysData, &days)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	found := false
-	var breakIndex int32
-	var breaks []string
+	dayIsMissing := true
+	breakWithSameNameExists := false
 	for i, day := range days.Days {
 		if day.Date.Day == r.Day && day.Date.Month == r.Month && day.Date.Year == r.Year {
-			found = true
-			breakIndex = day.BreaksAmount
+			dayIsMissing = false
+			for _, breakName := range day.Breaks {
+				if breakName == r.Name {
+					breakWithSameNameExists = true
+					break
+				}
+			}
 			dayP := &days.Days[i]
-			dayP.Breaks = append(day.Breaks, getBreakPostfix(day.BreaksAmount))
-			breaks = dayP.Breaks
-			dayP.BreaksAmount++
+			dayP.Breaks = append(day.Breaks, r.Name)
 			break
 		}
 	}
 
-	if !found {
-		return nil, errors.New("day is not found")
+	if dayIsMissing {
+		return errors.New("day is not found")
 	}
 
-	breakFilepath := getFilepath(dataDir, createBreakFilename(r.Year, r.Month, r.Day, breakIndex))
-	emptyBreak := GetBreakResponse{
-		Outcomes:   []string{},
-		SoldEvents: []SoldEvent{},
+	if breakWithSameNameExists {
+		return errors.New("break with the same name already exists")
+	}
+
+	breakFilepath := getFilepath(dataDir, createBreakFilename(r.Year, r.Month, r.Day, r.Name))
+	emptyBreak := entity.Break{
+		Name:      r.Name,
+		Events:    []entity.Event{},
+		StartDate: r.StartDate,
+		EndDate:   r.EndDate,
 	}
 	emptyBreakData, err := json.Marshal(emptyBreak)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = os.WriteFile(breakFilepath, emptyBreakData, 0644)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &AddBreadResponse{Breaks: breaks}, updateDaysFile(days)
+	return updateDaysFile(days)
 }

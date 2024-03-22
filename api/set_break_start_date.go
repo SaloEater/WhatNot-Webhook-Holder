@@ -25,19 +25,11 @@ func SetBreakStartDate(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	response, err := service.SetBreakStartDate(&request)
+	err = service.SetBreakStartDate(&request)
 	if err != nil {
 		fmt.Println("An error occurred during setting start date " + string(body) + ": " + err.Error())
 		return err
 	}
-
-	data, err := json.Marshal(response)
-	if err != nil {
-		fmt.Println("An error occurred during marshalling start date response: " + err.Error())
-		return err
-	}
-
-	w.Write(data)
 
 	return nil
 }

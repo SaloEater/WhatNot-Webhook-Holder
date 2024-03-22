@@ -25,19 +25,11 @@ func AddBreak(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	response, err := service.AddBreak(&request)
+	err = service.AddBreak(&request)
 	if err != nil {
 		fmt.Println("An error occurred during adding break " + string(body) + ": " + err.Error())
 		return err
 	}
-
-	data, err := json.Marshal(response)
-	if err != nil {
-		fmt.Println("An error occurred during getting marshalling add break response: " + err.Error())
-		return err
-	}
-
-	w.Write(data)
 
 	return nil
 }

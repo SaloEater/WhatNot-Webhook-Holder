@@ -43,13 +43,17 @@ func main() {
 	}, api.HttpAny, false))
 
 	http.HandleFunc("/webhook/product_sold", routeBuilder.WrapRoute(webhook.ProductSold, api.HttpPost, true))
+
 	http.HandleFunc("/api/days", routeBuilder.WrapRoute(api.GetDays, api.HttpGet, true))
 	http.HandleFunc("/api/day/add", routeBuilder.WrapRoute(api.AddDay, api.HttpPost, true))
 	http.HandleFunc("/api/day/delete", routeBuilder.WrapRoute(api.DeleteDay, api.HttpPost, true))
-	http.HandleFunc("/api/break", routeBuilder.WrapRoute(api.GetBreak, api.HttpPost, true))
-	http.HandleFunc("/api/break/change_outcome", routeBuilder.WrapRoute(api.ChangeOutcome, api.HttpPost, true))
 	http.HandleFunc("/api/break/add", routeBuilder.WrapRoute(api.AddBreak, api.HttpPost, true))
+	http.HandleFunc("/api/break", routeBuilder.WrapRoute(api.GetBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/delete", routeBuilder.WrapRoute(api.DeleteBreak, api.HttpPost, true))
+	http.HandleFunc("/api/break/add_event", routeBuilder.WrapRoute(api.AddEvent, api.HttpPost, true))
+	http.HandleFunc("/api/break/update_event", routeBuilder.WrapRoute(api.UpdateEvent, api.HttpPost, true))
+	http.HandleFunc("/api/break/move_event", routeBuilder.WrapRoute(api.MoveEvent, api.HttpPost, true))
+	http.HandleFunc("/api/break/delete_event", routeBuilder.WrapRoute(api.DeleteEvent, api.HttpPost, true))
 	http.HandleFunc("/api/break/set_start_data", routeBuilder.WrapRoute(api.SetBreakStartDate, api.HttpPost, true))
 	http.HandleFunc("/api/break/set_end_data", routeBuilder.WrapRoute(api.SetBreakEndDate, api.HttpPost, true))
 

@@ -8,8 +8,8 @@ import (
 	"net/http"
 )
 
-func ChangeOutcome(w http.ResponseWriter, r *http.Request) error {
-	request := service.AddOutcomeRequest{}
+func AddEvent(w http.ResponseWriter, r *http.Request) error {
+	request := service.AddEventRequest{}
 	var err error
 	var body []byte
 
@@ -25,19 +25,11 @@ func ChangeOutcome(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	response, err := service.ChangeOutcome(&request)
+	err = service.AddEvent(&request)
 	if err != nil {
 		fmt.Println("An error occurred during getting break " + string(body) + ": " + err.Error())
 		return err
 	}
-
-	data, err := json.Marshal(response)
-	if err != nil {
-		fmt.Println("An error occurred during getting marshalling break response: " + err.Error())
-		return err
-	}
-
-	w.Write(data)
 
 	return nil
 }
