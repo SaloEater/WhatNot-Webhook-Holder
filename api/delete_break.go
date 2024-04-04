@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func DeleteBreak(w http.ResponseWriter, r *http.Request) error {
+func (a *API) DeleteBreak(w http.ResponseWriter, r *http.Request) (any, error) {
 	request := service.DeleteBreakRequest{}
 	var err error
 	var body []byte
@@ -16,20 +16,14 @@ func DeleteBreak(w http.ResponseWriter, r *http.Request) error {
 	body, err = io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("An error occurred during reading body of delete break: " + err.Error())
-		return err
+		return nil, err
 	}
 
 	err = json.Unmarshal(body, &request)
 	if err != nil {
 		fmt.Println("An error occurred during unmarshalling body of delete break: " + err.Error())
-		return err
+		return nil, err
 	}
 
-	err = service.DeleteBreak(&request)
-	if err != nil {
-		fmt.Println("An error occurred during deleting break " + string(body) + ": " + err.Error())
-		return err
-	}
-
-	return nil
+	return a.Service.DeleteBreak(&request)
 }

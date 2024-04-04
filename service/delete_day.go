@@ -1,56 +1,19 @@
 package service
 
-import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
-	"os"
-)
-
 type DeleteDayRequest struct {
-	Year  int
-	Month int
-	Day   int
+	Id int `json:"id"`
 }
 
-func DeleteDay(r *DeleteDayRequest) error {
-	daysData, err := GetDays()
-	if err != nil {
-		return err
+type DeleteDayResponse struct {
+	Success bool `json:"success"`
+}
+
+func (s *Service) DeleteDay(r *DeleteDayRequest) (*DeleteDayResponse, error) {
+	response := &DeleteDayResponse{Success: false}
+	err := s.DayRepository.Delete(r.Id)
+	if err == nil {
+		response.Success = true
 	}
 
-	var days entity.Days
-	err = json.Unmarshal(daysData, &days)
-	if err != nil {
-		return err
-	}
-
-	found := false
-	var dayIndex int
-	for i, day := range days.Days {
-		if day.Date.Day == r.Day && day.Date.Month == r.Month && day.Date.Year == r.Year {
-			found = true
-			for _, dayBreakName := range day.Breaks {
-				breakFilepath := getFilepath(dataDir, createBreakFilename(r.Year, r.Month, r.Day, dayBreakName))
-				deleteBreakFilepath := getFilepath(dataDir, createDeletedBreakFilename(r.Year, r.Month, r.Day, dayBreakName))
-				err = os.Rename(breakFilepath, deleteBreakFilepath)
-				fmt.Println("An error occurred during deleting break: " + err.Error())
-			}
-			dayIndex = i
-		}
-	}
-
-	if !found {
-		return errors.New("day is not found")
-	}
-
-	days.Days = append(days.Days[:dayIndex], days.Days[dayIndex+1:]...)
-
-	err = updateDaysFile(days)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return response, err
 }

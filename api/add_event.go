@@ -8,28 +8,22 @@ import (
 	"net/http"
 )
 
-func AddEvent(w http.ResponseWriter, r *http.Request) error {
+func (a *API) AddEvent(w http.ResponseWriter, r *http.Request) (any, error) {
 	request := service.AddEventRequest{}
 	var err error
 	var body []byte
 
 	body, err = io.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("An error occurred during reading body of add outcome: " + err.Error())
-		return err
+		fmt.Println("An error occurred during reading body of add event: " + err.Error())
+		return nil, err
 	}
 
 	err = json.Unmarshal(body, &request)
 	if err != nil {
-		fmt.Println("An error occurred during unmarshalling body of add outcome: " + err.Error())
-		return err
+		fmt.Println("An error occurred during unmarshalling body of add event: " + err.Error())
+		return nil, err
 	}
 
-	err = service.AddEvent(&request)
-	if err != nil {
-		fmt.Println("An error occurred during getting break " + string(body) + ": " + err.Error())
-		return err
-	}
-
-	return nil
+	return a.Service.AddEvent(&request)
 }

@@ -18,36 +18,36 @@ type ProductSoldWebhook struct {
 
 var sellerId string
 
-func ProductSold(w http.ResponseWriter, r *http.Request) error {
+func ProductSold(w http.ResponseWriter, r *http.Request) (any, error) {
 	var err error
 	err = verifySellerIdHeader(r.Header.Get(api.HeaderSellerId))
 	if err != nil {
 		fmt.Println("An error occurred during matching seller id: " + err.Error())
-		return err
+		return nil, err
 	}
 
 	var bodyEncoded []byte
 	bodyEncoded, err = io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("An error occurred during reading product sold data: " + err.Error())
-		return err
+		return nil, err
 	}
 
 	var request service.ProductSoldRequest
 	err = json.Unmarshal(bodyEncoded, &request)
 	if err != nil {
 		fmt.Println("An error occurred during unmarshal product sold data: " + err.Error())
-		return err
+		return nil, err
 	}
 
 	err = service.ProductSold(request)
 	if err != nil {
 		fmt.Println("An error occurred during processing product sold data: " + err.Error())
-		return err
+		return nil, err
 	}
 
 	w.WriteHeader(http.StatusOK)
-	return nil
+	return nil, nil
 }
 
 func verifySellerIdHeader(header string) error {

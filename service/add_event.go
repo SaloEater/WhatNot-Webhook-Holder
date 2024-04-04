@@ -1,17 +1,9 @@
 package service
 
-import (
-	"encoding/json"
-	"fmt"
-	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
-	"os"
-)
+import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 
 type AddEventRequest struct {
-	Year       int
-	Month      int
-	Day        int
-	Name       string `json:"name"`
+	BreakId    int `json:"break_id"`
 	Customer   string
 	Price      float32
 	Team       string
@@ -20,34 +12,22 @@ type AddEventRequest struct {
 	Quantity   int
 }
 
-func AddEvent(r *AddEventRequest) error {
-	breakFilepath := getFilepath(dataDir, createBreakFilename(r.Year, r.Month, r.Day, r.Name))
-	breakData, err := os.ReadFile(breakFilepath)
-	if err != nil {
-		return err
-	}
+type AddEventResponse struct {
+	Id int `json:"id"`
+}
 
-	var dayBreak entity.Break
-	err = json.Unmarshal(breakData, &dayBreak)
-	if err != nil {
-		return err
-	}
-
-	dayBreak.Events = append(dayBreak.Events, entity.Event{
-		Id: RandStringBytes(5),
-
+func (s *Service) AddEvent(r *AddEventRequest) (*AddEventResponse, error) {
+	id, err := s.EventRepository.Create(&entity.Event{
 		Customer:   r.Customer,
 		Price:      r.Price,
-		Team:       r.Customer,
+		Team:       r.Team,
 		IsGiveaway: r.IsGiveaway,
-		Note:       r.Customer,
+		Note:       r.Note,
 		Quantity:   r.Quantity,
 	})
-	data, err := json.Marshal(dayBreak)
-	err = os.WriteFile(breakFilepath, data, 0644)
 	if err != nil {
-		fmt.Println("An error occurred during writing writing")
+		return nil, err
 	}
 
-	return nil
+	return &AddEventResponse{Id: id}, nil
 }

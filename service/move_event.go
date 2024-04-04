@@ -1,73 +1,47 @@
 package service
 
-import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
-	"os"
-)
-
 type MoveEventRequest struct {
-	Year      int
-	Month     int
-	Day       int
-	BreakName string `json:"break_name"`
-	Id        string
-	NewIndex  int `json:"new_index"`
+	Id       int
+	NewIndex int `json:"new_index"`
 }
 
-func MoveEvent(r *MoveEventRequest) error {
+type MoveEventResponse struct {
+	Success bool `json:"success"`
+}
 
-	breakFilepath := getFilepath(dataDir, createBreakFilename(r.Year, r.Month, r.Day, r.BreakName))
-	breakData, err := os.ReadFile(breakFilepath)
+func (s *Service) MoveEvent(r *MoveEventRequest) (*MoveEventResponse, error) {
+	response := &MoveEventResponse{}
+	events, err := s.EventRepository.GetAllChildren(r.Id)
 	if err != nil {
-		return err
+		return response, err
 	}
 
-	var dayBreak entity.Break
-	err = json.Unmarshal(breakData, &dayBreak)
-	if err != nil {
-		return err
-	}
-
-	oldEventIndex := notFound
-	for i, event := range dayBreak.Events {
-		if event.Id == r.Id {
-			oldEventIndex = i
+	var oldEventIndex int
+	var eventIndex int
+	for j, i := range events {
+		if i.Id == r.Id {
+			oldEventIndex = i.Index
+			eventIndex = j
 		}
 	}
 
-	if oldEventIndex == notFound {
-		return errors.New("break is not found")
+	for _, i := range events {
+		if oldEventIndex > r.NewIndex {
+			if i.Index < oldEventIndex && i.Index >= r.NewIndex {
+				i.Index++
+			}
+		} else {
+			if i.Index > oldEventIndex && i.Index <= r.NewIndex {
+				i.Index--
+			}
+		}
+	}
+	events[eventIndex].Index = r.NewIndex
+
+	err = s.EventRepository.UpdateAll(events)
+	if err == nil {
+		response.Success = true
 	}
 
-	if oldEventIndex == r.NewIndex {
-		return nil
-	}
-
-	if oldEventIndex < 0 || r.NewIndex >= len(dayBreak.Events) {
-		return errors.New("index is invalid")
-	}
-
-	var newEvents []entity.Event
-	if oldEventIndex < r.NewIndex {
-		newEvents = append(dayBreak.Events[:oldEventIndex], dayBreak.Events[oldEventIndex+1:r.NewIndex+1]...) // elements before new position without element
-		newEvents = append(newEvents, dayBreak.Events[oldEventIndex])                                         // element
-		newEvents = append(newEvents, dayBreak.Events[r.NewIndex+2:]...)                                      // elements after new position
-	} else {
-		newEvents = append(dayBreak.Events[:r.NewIndex], dayBreak.Events[oldEventIndex]) // elements before new position without element
-		newEvents = append(newEvents, dayBreak.Events[oldEventIndex:r.NewIndex]...)      // element
-		newEvents = append(newEvents, dayBreak.Events[oldEventIndex+1:]...)              // elements after new position
-	}
-
-	dayBreak.Events = newEvents
-
-	data, err := json.Marshal(dayBreak)
-	err = os.WriteFile(breakFilepath, data, 0644)
-	if err != nil {
-		fmt.Println("An error occurred during writing writing")
-	}
-
-	return nil
+	return response, err
 }

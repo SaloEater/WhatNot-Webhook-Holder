@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func GetBreak(w http.ResponseWriter, r *http.Request) error {
+func (a *API) GetBreak(w http.ResponseWriter, r *http.Request) (any, error) {
 	request := service.GetBreakRequest{}
 	var err error
 	var body []byte
@@ -16,22 +16,14 @@ func GetBreak(w http.ResponseWriter, r *http.Request) error {
 	body, err = io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("An error occurred during reading body of get break: " + err.Error())
-		return err
+		return nil, err
 	}
 
 	err = json.Unmarshal(body, &request)
 	if err != nil {
 		fmt.Println("An error occurred during unmarshalling body of get break: " + err.Error())
-		return err
+		return nil, err
 	}
 
-	response, err := service.GetBreak(&request)
-	if err != nil {
-		fmt.Println("An error occurred during getting break " + string(body) + ": " + err.Error())
-		return err
-	}
-
-	w.Write(response)
-
-	return nil
+	return a.Service.GetBreak(&request)
 }

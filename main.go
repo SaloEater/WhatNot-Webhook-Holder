@@ -4,6 +4,13 @@ import (
 	"fmt"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/api"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/api/webhook"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/repository/repository_sqlx"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/service"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
+	"log"
 	"net/http"
 	"os"
 )
@@ -34,31 +41,53 @@ func main() {
 		Password: os.Getenv("Password"),
 	}
 
+	err := godotenv.Load(".env")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	dbDSN := os.Getenv("db_dsn")
+
+	db, err := sqlx.Connect("postgres", dbDSN)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://db/migrations",
+		"postgres", driver)
+	m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
+
+	breakRepository := &repository_sqlx.BreakRepository{
+		DB: db,
+	}
+
+	svc := &service.Service{
+		BreakRepository: breakRepository,
+	}
+
+	apiO := api.API{Service: svc}
+
 	handler := corsMiddleware(http.DefaultServeMux)
-
-	http.HandleFunc("/ping", routeBuilder.WrapRoute(func(w http.ResponseWriter, r *http.Request) error {
-		fmt.Fprint(w, "pong")
-
-		return nil
-	}, api.HttpAny, false))
 
 	http.HandleFunc("/webhook/product_sold", routeBuilder.WrapRoute(webhook.ProductSold, api.HttpPost, true))
 
-	http.HandleFunc("/api/days", routeBuilder.WrapRoute(api.GetDays, api.HttpGet, true))
-	http.HandleFunc("/api/day/add", routeBuilder.WrapRoute(api.AddDay, api.HttpPost, true))
-	http.HandleFunc("/api/day/delete", routeBuilder.WrapRoute(api.DeleteDay, api.HttpPost, true))
-	http.HandleFunc("/api/break/add", routeBuilder.WrapRoute(api.AddBreak, api.HttpPost, true))
-	http.HandleFunc("/api/break", routeBuilder.WrapRoute(api.GetBreak, api.HttpPost, true))
-	http.HandleFunc("/api/break/delete", routeBuilder.WrapRoute(api.DeleteBreak, api.HttpPost, true))
-	http.HandleFunc("/api/break/add_event", routeBuilder.WrapRoute(api.AddEvent, api.HttpPost, true))
-	http.HandleFunc("/api/break/update_event", routeBuilder.WrapRoute(api.UpdateEvent, api.HttpPost, true))
-	http.HandleFunc("/api/break/move_event", routeBuilder.WrapRoute(api.MoveEvent, api.HttpPost, true))
-	http.HandleFunc("/api/break/delete_event", routeBuilder.WrapRoute(api.DeleteEvent, api.HttpPost, true))
-	http.HandleFunc("/api/break/set_start_data", routeBuilder.WrapRoute(api.SetBreakStartDate, api.HttpPost, true))
-	http.HandleFunc("/api/break/set_end_data", routeBuilder.WrapRoute(api.SetBreakEndDate, api.HttpPost, true))
+	http.HandleFunc("/api/days", routeBuilder.WrapRoute(apiO.GetDays, api.HttpGet, true))
+	http.HandleFunc("/api/day/add", routeBuilder.WrapRoute(apiO.AddDay, api.HttpPost, true))
+	http.HandleFunc("/api/day/delete", routeBuilder.WrapRoute(apiO.DeleteDay, api.HttpPost, true))
+	http.HandleFunc("/api/break/add", routeBuilder.WrapRoute(apiO.AddBreak, api.HttpPost, true))
+	http.HandleFunc("/api/break", routeBuilder.WrapRoute(apiO.GetBreak, api.HttpPost, true))
+	http.HandleFunc("/api/break/delete", routeBuilder.WrapRoute(apiO.DeleteBreak, api.HttpPost, true))
+	http.HandleFunc("/api/break/update_break", routeBuilder.WrapRoute(apiO.UpdateBreak, api.HttpPost, true))
+	http.HandleFunc("/api/event/add", routeBuilder.WrapRoute(apiO.AddEvent, api.HttpPost, true))
+	http.HandleFunc("/api/event/update", routeBuilder.WrapRoute(apiO.UpdateEvent, api.HttpPost, true))
+	http.HandleFunc("/api/event/move", routeBuilder.WrapRoute(apiO.MoveEvent, api.HttpPost, true))
+	http.HandleFunc("/api/event/delete", routeBuilder.WrapRoute(apiO.DeleteEvent, api.HttpPost, true))
 
 	fmt.Println("Serving on port 5555")
-	err := http.ListenAndServe(":5555", handler)
+	err = http.ListenAndServe(":5555", handler)
 	if err != nil {
 		fmt.Println("An error occurred during listening: " + err.Error())
 	}

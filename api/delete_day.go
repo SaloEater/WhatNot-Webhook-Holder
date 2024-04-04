@@ -8,28 +8,22 @@ import (
 	"net/http"
 )
 
-func DeleteDay(w http.ResponseWriter, r *http.Request) error {
+func (a *API) DeleteDay(w http.ResponseWriter, r *http.Request) (any, error) {
 	request := service.DeleteDayRequest{}
 	var err error
 	var body []byte
 
 	body, err = io.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("An error occurred during reading body of delete break: " + err.Error())
-		return err
+		fmt.Println("An error occurred during reading body of delete day: " + err.Error())
+		return nil, err
 	}
 
 	err = json.Unmarshal(body, &request)
 	if err != nil {
-		fmt.Println("An error occurred during unmarshalling body of delete break: " + err.Error())
-		return err
+		fmt.Println("An error occurred during unmarshalling body of delete day: " + err.Error())
+		return nil, err
 	}
 
-	err = service.DeleteDay(&request)
-	if err != nil {
-		fmt.Println("An error occurred during deleting break " + string(body) + ": " + err.Error())
-		return err
-	}
-
-	return nil
+	return a.Service.DeleteDay(&request)
 }

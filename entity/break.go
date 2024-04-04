@@ -1,6 +1,8 @@
 package entity
 
 type Break struct {
+	Id int `json:"id"`
+
 	Name string `json:"name"`
 
 	Events []Event `json:"events"`

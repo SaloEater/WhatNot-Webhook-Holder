@@ -5,38 +5,37 @@ import (
 	"strconv"
 )
 
-type AddBreakRequest struct {
-	DayId     int    `json:"day_id"`
+type UpdateBreakRequest struct {
+	Id        int    `json:"id"`
 	Name      string `json:"name"`
 	StartDate string `json:"start_date"`
 	EndDate   string `json:"end_date"`
 }
 
-type AddBreakResponse struct {
-	Id int `json:"id"`
+type UpdateBreakResponse struct {
+	Success bool `json:"success"`
 }
 
-func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
+func (s *Service) UpdateBreak(r *UpdateBreakRequest) (*UpdateBreakResponse, error) {
+	response := &UpdateBreakResponse{}
 	startDate, err := strconv.ParseInt(r.StartDate, 10, 0)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 	endDate, err := strconv.ParseInt(r.EndDate, 10, 0)
 	if err != nil {
-		return nil, err
+		return response, err
 	}
-
-	var id int
-	id, err = s.BreakRepository.Create(&entity.Break{
+	err = s.BreakRepository.Update(&entity.Break{
+		Id:        r.Id,
 		Name:      r.Name,
-		Events:    []entity.Event{},
 		StartDate: startDate,
 		EndDate:   endDate,
 	})
-	if err != nil {
-		return nil, err
+	if err == nil {
+		response.Success = true
 	}
 
-	return &AddBreakResponse{Id: id}, nil
+	return response, nil
 
 }

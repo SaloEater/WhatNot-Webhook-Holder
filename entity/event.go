@@ -1,8 +1,9 @@
 package entity
 
 type Event struct {
-	Id string `json:"id"`
+	Id int `json:"id"`
 
+	Index      int     `json:"index"`
 	Customer   string  `json:"customer"`
 	Price      float32 `json:"price"`
 	Team       string  `json:"team"`

@@ -1,12 +1,8 @@
 package entity
 
-type Date struct {
+type Day struct {
+	Id    int `json:"id"`
 	Year  int `json:"year"`
 	Month int `json:"month"`
 	Day   int `json:"day"`
-}
-
-type Day struct {
-	Date   Date     `json:"date"`
-	Breaks []string `json:"breaks"`
 }
