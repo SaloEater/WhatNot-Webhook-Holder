@@ -29,7 +29,6 @@ func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
 	var id int
 	id, err = s.BreakRepository.Create(&entity.Break{
 		Name:      r.Name,
-		Events:    []entity.Event{},
 		StartDate: startDate,
 		EndDate:   endDate,
 	})

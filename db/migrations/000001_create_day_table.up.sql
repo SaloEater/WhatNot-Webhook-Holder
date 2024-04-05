@@ -1,0 +1,4 @@
+CREATE TABLE day (
+    id SERIAL PRIMARY KEY,
+    date DATE
+)

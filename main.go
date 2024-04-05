@@ -41,7 +41,7 @@ func main() {
 		Password: os.Getenv("Password"),
 	}
 
-	err := godotenv.Load(".env")
+	err := godotenv.Load(".env.local")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -54,11 +54,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	service.InitFile()
 	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://db/migrations",
-		"postgres", driver)
+		"defaultdb", driver)
 	m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
+	return
 
 	breakRepository := &repository_sqlx.BreakRepository{
 		DB: db,
