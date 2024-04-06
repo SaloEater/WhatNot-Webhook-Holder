@@ -1,12 +1,13 @@
 package service
 
 import (
-	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"strconv"
+	"time"
 )
 
 type UpdateBreakRequest struct {
-	Id        int    `json:"id"`
+	Id        int64  `json:"id"`
+	DayId     int64  `json:"day_id"`
 	Name      string `json:"name"`
 	StartDate string `json:"start_date"`
 	EndDate   string `json:"end_date"`
@@ -18,6 +19,10 @@ type UpdateBreakResponse struct {
 
 func (s *Service) UpdateBreak(r *UpdateBreakRequest) (*UpdateBreakResponse, error) {
 	response := &UpdateBreakResponse{}
+	oldBreak, err := s.BreakRepository.Get(r.Id)
+	if err != nil {
+		return response, err
+	}
 	startDate, err := strconv.ParseInt(r.StartDate, 10, 0)
 	if err != nil {
 		return response, err
@@ -26,16 +31,15 @@ func (s *Service) UpdateBreak(r *UpdateBreakRequest) (*UpdateBreakResponse, erro
 	if err != nil {
 		return response, err
 	}
-	err = s.BreakRepository.Update(&entity.Break{
-		Id:        r.Id,
-		Name:      r.Name,
-		StartDate: startDate,
-		EndDate:   endDate,
-	})
+	oldBreak.Name = r.Name
+	oldBreak.DayId = r.DayId
+	oldBreak.StartDate = time.UnixMilli(startDate)
+	oldBreak.EndDate = time.UnixMilli(endDate)
+	err = s.BreakRepository.Update(oldBreak)
 	if err == nil {
 		response.Success = true
 	}
 
-	return response, nil
+	return response, err
 
 }

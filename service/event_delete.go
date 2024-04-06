@@ -3,7 +3,7 @@ package service
 const notFound = -1
 
 type DeleteEventRequest struct {
-	Id int `json:"id"`
+	Id int64 `json:"id"`
 }
 
 type DeleteEventResponse struct {

@@ -13,8 +13,8 @@ type RouteBuilder struct {
 }
 
 type Response struct {
-	Data  any
-	Error string
+	Data  any    `json:"data"`
+	Error string `json:"error"`
 }
 
 func (rb *RouteBuilder) WrapRoute(route func(w http.ResponseWriter, r *http.Request) (any, error), method string, isPrivate bool) func(w http.ResponseWriter, r *http.Request) {

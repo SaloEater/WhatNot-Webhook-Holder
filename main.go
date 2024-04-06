@@ -59,15 +59,12 @@ func main() {
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://db/migrations",
 		"defaultdb", driver)
-	m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
-	return
-
-	breakRepository := &repository_sqlx.BreakRepository{
-		DB: db,
-	}
+	m.Up()
 
 	svc := &service.Service{
-		BreakRepository: breakRepository,
+		BreakRepository: &repository_sqlx.BreakRepository{DB: db},
+		DayRepository:   &repository_sqlx.DayRepository{DB: db},
+		EventRepository: &repository_sqlx.EventRepository{DB: db},
 	}
 
 	apiO := api.API{Service: svc}
@@ -80,9 +77,10 @@ func main() {
 	http.HandleFunc("/api/day/add", routeBuilder.WrapRoute(apiO.AddDay, api.HttpPost, true))
 	http.HandleFunc("/api/day/delete", routeBuilder.WrapRoute(apiO.DeleteDay, api.HttpPost, true))
 	http.HandleFunc("/api/break/add", routeBuilder.WrapRoute(apiO.AddBreak, api.HttpPost, true))
-	http.HandleFunc("/api/break", routeBuilder.WrapRoute(apiO.GetBreak, api.HttpPost, true))
+	http.HandleFunc("/api/break/by_day", routeBuilder.WrapRoute(apiO.GetBreaksByDay, api.HttpPost, true))
 	http.HandleFunc("/api/break/delete", routeBuilder.WrapRoute(apiO.DeleteBreak, api.HttpPost, true))
-	http.HandleFunc("/api/break/update_break", routeBuilder.WrapRoute(apiO.UpdateBreak, api.HttpPost, true))
+	http.HandleFunc("/api/break/update", routeBuilder.WrapRoute(apiO.UpdateBreak, api.HttpPost, true))
+	http.HandleFunc("/api/event/all", routeBuilder.WrapRoute(apiO.GetEventsByBreak, api.HttpPost, true))
 	http.HandleFunc("/api/event/add", routeBuilder.WrapRoute(apiO.AddEvent, api.HttpPost, true))
 	http.HandleFunc("/api/event/update", routeBuilder.WrapRoute(apiO.UpdateEvent, api.HttpPost, true))
 	http.HandleFunc("/api/event/move", routeBuilder.WrapRoute(apiO.MoveEvent, api.HttpPost, true))

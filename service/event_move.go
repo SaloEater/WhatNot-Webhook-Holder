@@ -1,7 +1,7 @@
 package service
 
 type MoveEventRequest struct {
-	Id       int
+	Id       int64
 	NewIndex int `json:"new_index"`
 }
 

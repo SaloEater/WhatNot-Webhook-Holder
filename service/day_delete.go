@@ -1,7 +1,7 @@
 package service
 
 type DeleteDayRequest struct {
-	Id int `json:"id"`
+	Id int64 `json:"id"`
 }
 
 type DeleteDayResponse struct {

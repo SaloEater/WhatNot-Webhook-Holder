@@ -1,8 +1,8 @@
 package entity
 
+import "time"
+
 type Day struct {
-	Id    int `json:"id"`
-	Year  int `json:"year"`
-	Month int `json:"month"`
-	Day   int `json:"day"`
+	Id   int64     `db:"id" json:"id"`
+	Date time.Time `db:"date" json:"date"`
 }

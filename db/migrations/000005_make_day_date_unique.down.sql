@@ -1,0 +1,1 @@
+ALTER TABLE day DROP CONSTRAINT unique_date IF;

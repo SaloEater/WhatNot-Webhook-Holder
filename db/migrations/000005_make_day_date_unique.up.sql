@@ -1,0 +1,1 @@
+ALTER TABLE day ADD CONSTRAINT unique_date UNIQUE (date);

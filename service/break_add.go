@@ -3,17 +3,18 @@ package service
 import (
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"strconv"
+	"time"
 )
 
 type AddBreakRequest struct {
-	DayId     int    `json:"day_id"`
+	DayId     int64  `json:"day_id"`
 	Name      string `json:"name"`
 	StartDate string `json:"start_date"`
 	EndDate   string `json:"end_date"`
 }
 
 type AddBreakResponse struct {
-	Id int `json:"id"`
+	Id int64 `json:"id"`
 }
 
 func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
@@ -26,11 +27,12 @@ func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
 		return nil, err
 	}
 
-	var id int
+	var id int64
 	id, err = s.BreakRepository.Create(&entity.Break{
+		DayId:     r.DayId,
 		Name:      r.Name,
-		StartDate: startDate,
-		EndDate:   endDate,
+		StartDate: time.UnixMilli(startDate),
+		EndDate:   time.UnixMilli(endDate),
 	})
 	if err != nil {
 		return nil, err

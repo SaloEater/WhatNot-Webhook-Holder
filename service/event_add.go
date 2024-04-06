@@ -3,7 +3,7 @@ package service
 import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 
 type AddEventRequest struct {
-	BreakId    int `json:"break_id"`
+	BreakId    int64 `json:"break_id"`
 	Customer   string
 	Price      float32
 	Team       string
@@ -13,11 +13,12 @@ type AddEventRequest struct {
 }
 
 type AddEventResponse struct {
-	Id int `json:"id"`
+	Id int64 `json:"id"`
 }
 
 func (s *Service) AddEvent(r *AddEventRequest) (*AddEventResponse, error) {
 	id, err := s.EventRepository.Create(&entity.Event{
+		BreakId:    r.BreakId,
 		Customer:   r.Customer,
 		Price:      r.Price,
 		Team:       r.Team,

@@ -5,8 +5,9 @@ import (
 )
 
 type BreakRepository interface {
-	Create(*entity.Break) (int, error)
-	Get(int) (*entity.Break, error)
-	Delete(int) error
+	Create(*entity.Break) (int64, error)
+	Get(int64) (*entity.Break, error)
+	Delete(int64) error
 	Update(p *entity.Break) error
+	GetBreaksByDay(int64) ([]*entity.Break, error)
 }
