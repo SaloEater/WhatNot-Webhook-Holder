@@ -36,15 +36,14 @@ func corsMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
-	routeBuilder := api.RouteBuilder{
-		Username: os.Getenv("Username"),
-		Password: os.Getenv("Password"),
-	}
-
 	err := godotenv.Load(".env.local")
 	if err != nil {
 		fmt.Println(err)
-		return
+	}
+
+	routeBuilder := api.RouteBuilder{
+		Username: os.Getenv("Username"),
+		Password: os.Getenv("Password"),
 	}
 
 	dbDSN := os.Getenv("db_dsn")
