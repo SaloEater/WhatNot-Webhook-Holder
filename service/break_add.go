@@ -1,8 +1,8 @@
 package service
 
 import (
+	"fmt"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
-	"strconv"
 	"time"
 )
 
@@ -18,12 +18,14 @@ type AddBreakResponse struct {
 }
 
 func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
-	startDate, err := strconv.ParseInt(r.StartDate, 10, 0)
+	startDate, err := time.Parse(DateLayout, r.StartDate)
 	if err != nil {
+		fmt.Println("Error parsing start date string:", err)
 		return nil, err
 	}
-	endDate, err := strconv.ParseInt(r.EndDate, 10, 0)
+	endDate, err := time.Parse(DateLayout, r.EndDate)
 	if err != nil {
+		fmt.Println("Error parsing end date string:", err)
 		return nil, err
 	}
 
@@ -31,8 +33,9 @@ func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
 	id, err = s.BreakRepository.Create(&entity.Break{
 		DayId:     r.DayId,
 		Name:      r.Name,
-		StartDate: time.UnixMilli(startDate),
-		EndDate:   time.UnixMilli(endDate),
+		StartDate: startDate,
+		EndDate:   endDate,
+		IsDeleted: false,
 	})
 	if err != nil {
 		return nil, err

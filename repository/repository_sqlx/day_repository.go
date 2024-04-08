@@ -12,18 +12,18 @@ type DayRepository struct {
 
 func (r *DayRepository) GetAll() ([]*entity.Day, error) {
 	days := []*entity.Day{}
-	err := r.DB.Select(&days, `SELECT * FROM day`)
+	err := r.DB.Select(&days, `SELECT * FROM day WHERE is_deleted = false`)
 	return days, err
 }
 
 func (r *DayRepository) Get(id int64) (*entity.Day, error) {
 	var day entity.Day
-	err := r.DB.Get(&day, `SELECT * FROM day where id = $1`, id)
+	err := r.DB.Get(&day, `SELECT * FROM day where id = $1 AND is_deleted = false`, id)
 	return &day, err
 }
 
 func (r *DayRepository) Delete(id int64) error {
-	_, err := r.DB.Exec(`DELETE FROM day WHERE id = $1`, id)
+	_, err := r.DB.Exec(`UPDATE day SET is_deleted = true WHERE id = $1`, id)
 	return err
 }
 
@@ -38,9 +38,10 @@ func (r *DayRepository) Update(day *entity.Day) error {
 func (r *DayRepository) Create(day *entity.Day) (int64, error) {
 	var id int64
 	rows, err := r.DB.NamedQuery(`INSERT INTO day (
-		date
+		date, is_deleted
 	) VALUES (
-		:date
+		:date,
+		:is_deleted
 	) RETURNING (id)`, day)
 	if err != nil {
 		return id, err

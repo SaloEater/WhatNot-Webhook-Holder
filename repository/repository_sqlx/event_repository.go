@@ -12,18 +12,18 @@ type EventRepository struct {
 
 func (r *EventRepository) GetAllByBreak(breakId int64) ([]*entity.Event, error) {
 	var events []*entity.Event
-	err := r.DB.Select(&events, `SELECT * FROM event WHERE break_id = $1`, breakId)
+	err := r.DB.Select(&events, `SELECT * FROM event WHERE break_id = $1 AND is_deleted = false`, breakId)
 	return events, err
 }
 
 func (r *EventRepository) Get(id int64) (*entity.Event, error) {
 	var event entity.Event
-	err := r.DB.Get(&event, `SELECT * FROM event where id = $1`, id)
+	err := r.DB.Get(&event, `SELECT * FROM event where id = $1 AND is_deleted = false`, id)
 	return &event, err
 }
 
 func (r *EventRepository) Delete(id int64) error {
-	_, err := r.DB.Exec(`DELETE FROM event WHERE id = $1`, id)
+	_, err := r.DB.Exec(`UPDATE event SET is_deleted = true WHERE id = $1`, id)
 	return err
 }
 
@@ -52,16 +52,18 @@ func (r *EventRepository) Create(event *entity.Event) (int64, error) {
 		team,
 		is_giveaway,
 		note,
-		quantity
+		quantity,
+        is_deleted
 	) VALUES (
-	          :break_id,
-	          (SELECT COALESCE(MAX(index), 0) + 1 FROM event WHERE break_id = :break_id),
-	          :customer,
-	          :price,
-	          :team,
-	          :is_giveaway,
-	          :note,
-	          :quantity
+		:break_id,
+		(SELECT COALESCE(MAX(index), 0) + 1 FROM event WHERE break_id = :break_id),
+		:customer,
+		:price,
+		:team,
+		:is_giveaway,
+		:note,
+		:quantity,
+		:is_deleted
 	) RETURNING (id)`, event)
 	if err != nil {
 		return id, err
@@ -84,7 +86,7 @@ func (r *EventRepository) GetAllChildren(eventId int64) ([]*entity.Event, error)
 	err := r.DB.Select(&events, `
 		SELECT * FROM event WHERE break_id IN (
 		    SELECT break_id FROM event WHERE id = $1
-		)
+		) AND is_deleted = false
 	`, eventId)
 	return events, err
 }
@@ -117,4 +119,50 @@ func (r *EventRepository) UpdateAll(events []*entity.Event) error {
 	}
 
 	return nil
+}
+
+func (r *EventRepository) Move(id int64, newIndex int) error {
+	tx, err := r.DB.Beginx()
+	defer func() {
+		errRb := tx.Rollback()
+		if errRb != nil {
+			fmt.Println("trying to cancel committed transaction")
+		}
+	}()
+	query := `
+WITH oldRecord AS (
+    SELECT index as oldIndex, break_id as breakId FROM event WHERE id = :id
+) UPDATE event
+SET
+    index = CASE
+            WHEN :new_index > oldRecord.oldIndex THEN
+                CASE
+                    WHEN index <= :new_index AND index > oldRecord.oldIndex THEN index - 1
+                    ELSE index
+                END
+            WHEN :new_index < oldRecord.oldIndex THEN
+                CASE
+                    WHEN index >= :new_index AND index < oldRecord.oldIndex THEN index + 1
+                    ELSE index
+                END
+            ELSE index
+        END
+FROM oldRecord
+WHERE break_id = oldRecord.breakId;
+`
+	args := map[string]interface{}{
+		"id":        id,
+		"new_index": newIndex,
+	}
+	_, err = tx.NamedExec(query, args)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.NamedExec(`UPDATE event SET index = :new_index WHERE id = :id;`, args)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }

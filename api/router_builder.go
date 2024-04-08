@@ -38,6 +38,7 @@ func (rb *RouteBuilder) WrapRoute(route func(w http.ResponseWriter, r *http.Requ
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			requestResponse.Error = err.Error()
+			fmt.Println(err.Error())
 		} else {
 			w.WriteHeader(http.StatusOK)
 		}

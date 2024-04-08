@@ -17,7 +17,8 @@ type AddDayResponse struct {
 
 func (s *Service) AddDay(r *AddDayRequest) (*AddDayResponse, error) {
 	id, err := s.DayRepository.Create(&entity.Day{
-		Date: time.Date(r.Year, time.Month(r.Month), r.Day, 0, 0, 0, 0, time.UTC),
+		Date:      time.Date(r.Year, time.Month(r.Month), r.Day, 0, 0, 0, 0, time.UTC),
+		IsDeleted: false,
 	})
 
 	if err != nil {

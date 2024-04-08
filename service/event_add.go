@@ -25,6 +25,7 @@ func (s *Service) AddEvent(r *AddEventRequest) (*AddEventResponse, error) {
 		IsGiveaway: r.IsGiveaway,
 		Note:       r.Note,
 		Quantity:   r.Quantity,
+		IsDeleted:  false,
 	})
 	if err != nil {
 		return nil, err

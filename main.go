@@ -59,7 +59,11 @@ func main() {
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://db/migrations",
 		"defaultdb", driver)
-	m.Up()
+	err = m.Up()
+	if err != migrate.ErrNoChange && err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	svc := &service.Service{
 		BreakRepository: &repository_sqlx.BreakRepository{DB: db},
@@ -74,13 +78,15 @@ func main() {
 	http.HandleFunc("/webhook/product_sold", routeBuilder.WrapRoute(webhook.ProductSold, api.HttpPost, true))
 
 	http.HandleFunc("/api/days", routeBuilder.WrapRoute(apiO.GetDays, api.HttpGet, true))
+	http.HandleFunc("/api/day", routeBuilder.WrapRoute(apiO.GetDay, api.HttpPost, true))
 	http.HandleFunc("/api/day/add", routeBuilder.WrapRoute(apiO.AddDay, api.HttpPost, true))
 	http.HandleFunc("/api/day/delete", routeBuilder.WrapRoute(apiO.DeleteDay, api.HttpPost, true))
+	http.HandleFunc("/api/break", routeBuilder.WrapRoute(apiO.GetBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/add", routeBuilder.WrapRoute(apiO.AddBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/by_day", routeBuilder.WrapRoute(apiO.GetBreaksByDay, api.HttpPost, true))
 	http.HandleFunc("/api/break/delete", routeBuilder.WrapRoute(apiO.DeleteBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/update", routeBuilder.WrapRoute(apiO.UpdateBreak, api.HttpPost, true))
-	http.HandleFunc("/api/event/all", routeBuilder.WrapRoute(apiO.GetEventsByBreak, api.HttpPost, true))
+	http.HandleFunc("/api/event/by_break", routeBuilder.WrapRoute(apiO.GetEventsByBreak, api.HttpPost, true))
 	http.HandleFunc("/api/event/add", routeBuilder.WrapRoute(apiO.AddEvent, api.HttpPost, true))
 	http.HandleFunc("/api/event/update", routeBuilder.WrapRoute(apiO.UpdateEvent, api.HttpPost, true))
 	http.HandleFunc("/api/event/move", routeBuilder.WrapRoute(apiO.MoveEvent, api.HttpPost, true))

@@ -8,17 +8,11 @@ type GetBreaksByDayRequest struct {
 	DayId int64 `json:"day_id"`
 }
 
-type GetBreaksByDayResponse struct {
-	Breaks []*entity.Break `json:"breaks"`
-}
-
-func (s *Service) GetBreaksByDay(r *GetBreaksByDayRequest) (*GetBreaksByDayResponse, error) {
+func (s *Service) GetBreaksByDay(r *GetBreaksByDayRequest) ([]*entity.Break, error) {
 	breaks, err := s.BreakRepository.GetBreaksByDay(r.DayId)
 	if err != nil {
 		return nil, err
 	}
 
-	return &GetBreaksByDayResponse{
-		Breaks: breaks,
-	}, nil
+	return breaks, nil
 }

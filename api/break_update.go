@@ -19,6 +19,8 @@ func (a *API) UpdateBreak(w http.ResponseWriter, r *http.Request) (any, error) {
 		return nil, err
 	}
 
+	b := string(body)
+	fmt.Println(b)
 	err = json.Unmarshal(body, &request)
 	if err != nil {
 		fmt.Println("An error occurred during unmarshalling body of update break: " + err.Error())

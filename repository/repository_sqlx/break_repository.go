@@ -13,12 +13,13 @@ type BreakRepository struct {
 func (r *BreakRepository) Create(dayBreak *entity.Break) (int64, error) {
 	var id int64
 	rows, err := r.DB.NamedQuery(`INSERT INTO break (
-		day_id, name, start_date, end_date
+		day_id, name, start_date, end_date, is_deleted
 	) VALUES (
-			:day_id,
-		  	:name,
-	        :start_date,
-	        :end_date
+		:day_id,
+		:name,
+		:start_date,
+		:end_date,
+		:is_deleted
 	) RETURNING (id)`, dayBreak)
 	if err != nil {
 		return id, err
@@ -38,12 +39,12 @@ func (r *BreakRepository) Create(dayBreak *entity.Break) (int64, error) {
 
 func (r *BreakRepository) Get(id int64) (*entity.Break, error) {
 	var dayBreak entity.Break
-	err := r.DB.Get(&dayBreak, `SELECT * FROM break where id = $1`, id)
+	err := r.DB.Get(&dayBreak, `SELECT * FROM break WHERE id = $1 AND is_deleted = false`, id)
 	return &dayBreak, err
 }
 
 func (r *BreakRepository) Delete(id int64) error {
-	_, err := r.DB.Exec(`DELETE FROM break WHERE id = $1`, id)
+	_, err := r.DB.Exec(`UPDATE break SET is_deleted = true WHERE id = $1`, id)
 	return err
 }
 
@@ -57,6 +58,6 @@ func (r *BreakRepository) Update(dayBreak *entity.Break) error {
 
 func (r *BreakRepository) GetBreaksByDay(dayId int64) ([]*entity.Break, error) {
 	breaks := []*entity.Break{}
-	err := r.DB.Select(&breaks, `SELECT * FROM break WHERE day_id = $1`, dayId)
+	err := r.DB.Select(&breaks, `SELECT * FROM break WHERE day_id = $1 AND is_deleted = false`, dayId)
 	return breaks, err
 }

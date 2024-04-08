@@ -10,4 +10,5 @@ type EventRepository interface {
 	Create(*entity.Event) (int64, error)
 	GetAllChildren(int64) ([]*entity.Event, error)
 	UpdateAll([]*entity.Event) error
+	Move(int64, int) error
 }

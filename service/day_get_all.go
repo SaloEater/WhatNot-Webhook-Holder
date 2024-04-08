@@ -1,11 +1,12 @@
 package service
 
-import (
-	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
-)
+type GetDaysDayResponse struct {
+	Id        int64 `json:"id"`
+	Timestamp int64 `json:"timestamp"`
+}
 
 type GetDaysResponse struct {
-	Days []*entity.Day `json:"days"`
+	Days []*GetDaysDayResponse `json:"days"`
 }
 
 func (s *Service) GetDays() (*GetDaysResponse, error) {
@@ -14,5 +15,13 @@ func (s *Service) GetDays() (*GetDaysResponse, error) {
 		return nil, err
 	}
 
-	return &GetDaysResponse{Days: days}, nil
+	daysResponse := make([]*GetDaysDayResponse, len(days))
+	for i, day := range days {
+		dayData := GetDaysDayResponse{}
+		dayData.Id = day.Id
+		dayData.Timestamp = day.Date.UnixMilli()
+		daysResponse[i] = &dayData
+	}
+
+	return &GetDaysResponse{Days: daysResponse}, nil
 }
