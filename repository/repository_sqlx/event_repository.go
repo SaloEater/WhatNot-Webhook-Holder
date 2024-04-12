@@ -10,6 +10,22 @@ type EventRepository struct {
 	DB *sqlx.DB
 }
 
+func (r *EventRepository) GetAll(ids []int64) ([]*entity.Event, error) {
+	query, args, err := sqlx.Named(`SELECT * FROM event WHERE id IN (:ids)`, map[string]interface{}{"ids": ids})
+	if err != nil {
+		return nil, err
+	}
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	query = r.DB.Rebind(query)
+
+	events := make([]*entity.Event, len(ids))
+	err = r.DB.Select(&events, query, args...)
+	return events, err
+}
+
 func (r *EventRepository) GetAllByBreak(breakId int64) ([]*entity.Event, error) {
 	var events []*entity.Event
 	err := r.DB.Select(&events, `SELECT * FROM event WHERE break_id = $1 AND is_deleted = false`, breakId)
@@ -108,7 +124,7 @@ func (r *EventRepository) UpdateAll(events []*entity.Event) error {
 			is_giveaway = :is_giveaway,
 			note = :note,
 			quantity = :quantity
-		WHERE id = :id`, event)
+		WHERE id = :id;`, event)
 		if err != nil {
 			return err
 		}
