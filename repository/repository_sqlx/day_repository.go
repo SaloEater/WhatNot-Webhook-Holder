@@ -10,37 +10,37 @@ type DayRepository struct {
 	DB *sqlx.DB
 }
 
-func (r *DayRepository) GetAll() ([]*entity.Day, error) {
-	days := []*entity.Day{}
-	err := r.DB.Select(&days, `SELECT * FROM day WHERE is_deleted = false`)
+func (r *DayRepository) GetAll() ([]*entity.Stream, error) {
+	days := []*entity.Stream{}
+	err := r.DB.Select(&days, `SELECT * FROM stream WHERE is_deleted = false`)
 	return days, err
 }
 
-func (r *DayRepository) Get(id int64) (*entity.Day, error) {
-	var day entity.Day
-	err := r.DB.Get(&day, `SELECT * FROM day where id = $1 AND is_deleted = false`, id)
+func (r *DayRepository) Get(id int64) (*entity.Stream, error) {
+	var day entity.Stream
+	err := r.DB.Get(&day, `SELECT * FROM stream where id = $1 AND is_deleted = false`, id)
 	return &day, err
 }
 
 func (r *DayRepository) Delete(id int64) error {
-	_, err := r.DB.Exec(`UPDATE day SET is_deleted = true WHERE id = $1`, id)
+	_, err := r.DB.Exec(`UPDATE stream SET is_deleted = true WHERE id = $1`, id)
 	return err
 }
 
-func (r *DayRepository) Update(day *entity.Day) error {
-	_, err := r.DB.NamedExec(`UPDATE day SET
-		date = :date
+func (r *DayRepository) Update(day *entity.Stream) error {
+	_, err := r.DB.NamedExec(`UPDATE stream SET
+		created_at = :created_at
 	WHERE id = :id`, day)
 
 	return err
 }
 
-func (r *DayRepository) Create(day *entity.Day) (int64, error) {
+func (r *DayRepository) Create(day *entity.Stream) (int64, error) {
 	var id int64
-	rows, err := r.DB.NamedQuery(`INSERT INTO day (
-		date, is_deleted
+	rows, err := r.DB.NamedQuery(`INSERT INTO stream (
+		created_at, is_deleted
 	) VALUES (
-		:date,
+		:created_at,
 		:is_deleted
 	) RETURNING (id)`, day)
 	if err != nil {

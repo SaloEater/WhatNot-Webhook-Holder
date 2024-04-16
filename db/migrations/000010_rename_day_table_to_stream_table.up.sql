@@ -1,0 +1,1 @@
+ALTER TABLE day RENAME TO stream

@@ -9,7 +9,7 @@ import (
 )
 
 func (a *API) GetDay(w http.ResponseWriter, r *http.Request) (any, error) {
-	request := service.GetDayRequest{}
+	request := service.GetStreamRequest{}
 	var err error
 	var body []byte
 
@@ -25,5 +25,5 @@ func (a *API) GetDay(w http.ResponseWriter, r *http.Request) (any, error) {
 		return nil, err
 	}
 
-	return a.Service.GetDay(&request)
+	return a.Service.GetStream(&request)
 }

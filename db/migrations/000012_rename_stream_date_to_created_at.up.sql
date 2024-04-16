@@ -1,0 +1,1 @@
+ALTER TABLE stream RENAME COLUMN date TO created_at

@@ -8,8 +8,8 @@ import (
 	"net/http"
 )
 
-func (a *API) AddDay(w http.ResponseWriter, r *http.Request) (any, error) {
-	request := service.AddDayRequest{}
+func (a *API) AddStream(w http.ResponseWriter, r *http.Request) (any, error) {
+	request := service.AddStreamRequest{}
 	var err error
 	var body []byte
 
@@ -25,5 +25,5 @@ func (a *API) AddDay(w http.ResponseWriter, r *http.Request) (any, error) {
 		return nil, err
 	}
 
-	return a.Service.AddDay(&request)
+	return a.Service.AddStream(&request)
 }

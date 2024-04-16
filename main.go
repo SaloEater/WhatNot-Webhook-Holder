@@ -65,9 +65,9 @@ func main() {
 	}
 
 	svc := &service.Service{
-		BreakRepository: &repository_sqlx.BreakRepository{DB: db},
-		DayRepository:   &repository_sqlx.DayRepository{DB: db},
-		EventRepository: &repository_sqlx.EventRepository{DB: db},
+		BreakRepository:  &repository_sqlx.BreakRepository{DB: db},
+		StreamRepository: &repository_sqlx.DayRepository{DB: db},
+		EventRepository:  &repository_sqlx.EventRepository{DB: db},
 	}
 
 	apiO := api.API{Service: svc}
@@ -76,10 +76,10 @@ func main() {
 
 	http.HandleFunc("/webhook/product_sold", routeBuilder.WrapRoute(webhook.ProductSold, api.HttpPost, true))
 
-	http.HandleFunc("/api/days", routeBuilder.WrapRoute(apiO.GetDays, api.HttpGet, true))
+	http.HandleFunc("/api/streams", routeBuilder.WrapRoute(apiO.GetStreams, api.HttpGet, true))
 	http.HandleFunc("/api/day", routeBuilder.WrapRoute(apiO.GetDay, api.HttpPost, true))
-	http.HandleFunc("/api/day/add", routeBuilder.WrapRoute(apiO.AddDay, api.HttpPost, true))
-	http.HandleFunc("/api/day/delete", routeBuilder.WrapRoute(apiO.DeleteDay, api.HttpPost, true))
+	http.HandleFunc("/api/day/add", routeBuilder.WrapRoute(apiO.AddStream, api.HttpPost, true))
+	http.HandleFunc("/api/day/delete", routeBuilder.WrapRoute(apiO.DeleteStream, api.HttpPost, true))
 	http.HandleFunc("/api/break", routeBuilder.WrapRoute(apiO.GetBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/add", routeBuilder.WrapRoute(apiO.AddBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/by_day", routeBuilder.WrapRoute(apiO.GetBreaksByDay, api.HttpPost, true))

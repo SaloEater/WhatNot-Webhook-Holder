@@ -9,7 +9,7 @@ import (
 )
 
 func (a *API) GetBreaksByDay(w http.ResponseWriter, r *http.Request) (any, error) {
-	request := service.GetBreaksByDayRequest{}
+	request := service.GetBreaksByStreamRequest{}
 	var err error
 	var body []byte
 

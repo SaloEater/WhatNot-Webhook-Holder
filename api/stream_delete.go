@@ -8,8 +8,8 @@ import (
 	"net/http"
 )
 
-func (a *API) DeleteDay(w http.ResponseWriter, r *http.Request) (any, error) {
-	request := service.DeleteDayRequest{}
+func (a *API) DeleteStream(w http.ResponseWriter, r *http.Request) (any, error) {
+	request := service.DeleteStreamRequest{}
 	var err error
 	var body []byte
 
@@ -25,5 +25,5 @@ func (a *API) DeleteDay(w http.ResponseWriter, r *http.Request) (any, error) {
 		return nil, err
 	}
 
-	return a.Service.DeleteDay(&request)
+	return a.Service.DeleteStream(&request)
 }

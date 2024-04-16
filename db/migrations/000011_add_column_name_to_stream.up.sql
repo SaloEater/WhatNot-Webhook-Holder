@@ -1,0 +1,1 @@
+ALTER TABLE stream ADD COLUMN name varchar(255)

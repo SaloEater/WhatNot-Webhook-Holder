@@ -2,8 +2,9 @@ package entity
 
 import "time"
 
-type Day struct {
+type Stream struct {
 	Id        int64     `db:"id" json:"id"`
-	Date      time.Time `db:"date" json:"date"`
+	Name      string    `db:"name" json:"name"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	IsDeleted bool      `json:"is_deleted" db:"is_deleted"`
 }
