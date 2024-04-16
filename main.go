@@ -77,9 +77,9 @@ func main() {
 	http.HandleFunc("/webhook/product_sold", routeBuilder.WrapRoute(webhook.ProductSold, api.HttpPost, true))
 
 	http.HandleFunc("/api/streams", routeBuilder.WrapRoute(apiO.GetStreams, api.HttpGet, true))
-	http.HandleFunc("/api/day", routeBuilder.WrapRoute(apiO.GetDay, api.HttpPost, true))
-	http.HandleFunc("/api/day/add", routeBuilder.WrapRoute(apiO.AddStream, api.HttpPost, true))
-	http.HandleFunc("/api/day/delete", routeBuilder.WrapRoute(apiO.DeleteStream, api.HttpPost, true))
+	http.HandleFunc("/api/stream", routeBuilder.WrapRoute(apiO.GetDay, api.HttpPost, true))
+	http.HandleFunc("/api/stream/add", routeBuilder.WrapRoute(apiO.AddStream, api.HttpPost, true))
+	http.HandleFunc("/api/stream/delete", routeBuilder.WrapRoute(apiO.DeleteStream, api.HttpPost, true))
 	http.HandleFunc("/api/break", routeBuilder.WrapRoute(apiO.GetBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/add", routeBuilder.WrapRoute(apiO.AddBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/by_day", routeBuilder.WrapRoute(apiO.GetBreaksByDay, api.HttpPost, true))
