@@ -4,12 +4,12 @@ import (
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 )
 
-type GetBreaksByStreamRequest struct {
-	DayId int64 `json:"day_id"`
+type GetStreamBreaksRequest struct {
+	Id int64 `json:"id"`
 }
 
-func (s *Service) GetBreaksByDay(r *GetBreaksByStreamRequest) ([]*entity.Break, error) {
-	breaks, err := s.BreakRepository.GetBreaksByDay(r.DayId)
+func (s *Service) GetStreamBreaks(r *GetStreamBreaksRequest) ([]*entity.Break, error) {
+	breaks, err := s.BreakRepository.GetBreaksByStreamId(r.Id)
 	if err != nil {
 		return nil, err
 	}

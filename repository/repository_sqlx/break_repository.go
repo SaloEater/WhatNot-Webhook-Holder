@@ -56,7 +56,7 @@ func (r *BreakRepository) Update(dayBreak *entity.Break) error {
 	return err
 }
 
-func (r *BreakRepository) GetBreaksByDay(dayId int64) ([]*entity.Break, error) {
+func (r *BreakRepository) GetBreaksByStreamId(dayId int64) ([]*entity.Break, error) {
 	breaks := []*entity.Break{}
 	err := r.DB.Select(&breaks, `SELECT * FROM break WHERE day_id = $1 AND is_deleted = false`, dayId)
 	return breaks, err

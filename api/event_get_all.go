@@ -8,8 +8,8 @@ import (
 	"net/http"
 )
 
-func (a *API) GetEventsByBreak(w http.ResponseWriter, r *http.Request) (any, error) {
-	request := service.GetEventsByBreakRequest{}
+func (a *API) GetBreakEvents(w http.ResponseWriter, r *http.Request) (any, error) {
+	request := service.GetBreakEventsRequest{}
 	var err error
 	var body []byte
 
@@ -25,5 +25,5 @@ func (a *API) GetEventsByBreak(w http.ResponseWriter, r *http.Request) (any, err
 		return nil, err
 	}
 
-	return a.Service.GetEventsByBreak(&request)
+	return a.Service.GetBreakEvents(&request)
 }

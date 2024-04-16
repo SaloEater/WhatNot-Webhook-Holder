@@ -38,8 +38,9 @@ func (r *DayRepository) Update(day *entity.Stream) error {
 func (r *DayRepository) Create(day *entity.Stream) (int64, error) {
 	var id int64
 	rows, err := r.DB.NamedQuery(`INSERT INTO stream (
-		created_at, is_deleted
+		name, created_at, is_deleted
 	) VALUES (
+	  	:name,
 		:created_at,
 		:is_deleted
 	) RETURNING (id)`, day)

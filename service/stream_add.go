@@ -10,19 +10,25 @@ type AddStreamRequest struct {
 }
 
 type AddStreamResponse struct {
-	Id int64 `json:"id"`
+	GetStreamsStream
 }
 
 func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
-	id, err := s.StreamRepository.Create(&entity.Stream{
+	stream := entity.Stream{
 		Name:      r.Name,
 		CreatedAt: time.Now().UTC(),
 		IsDeleted: false,
-	})
-
+	}
+	id, err := s.StreamRepository.Create(&stream)
 	if err != nil {
 		return nil, err
 	}
 
-	return &AddStreamResponse{Id: id}, nil
+	stream.Id = id
+
+	return &AddStreamResponse{GetStreamsStream: GetStreamsStream{
+		Id:        stream.Id,
+		Name:      stream.Name,
+		CreatedAt: stream.CreatedAt.UnixMilli(),
+	}}, nil
 }

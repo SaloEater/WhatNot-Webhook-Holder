@@ -4,21 +4,21 @@ import (
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 )
 
-type GetEventsByBreakRequest struct {
+type GetBreakEventsRequest struct {
 	BreakId int64 `json:"break_id"`
 }
 
-type GetEventsByBreakResponse struct {
+type GetBreakEventsResponse struct {
 	Events []*entity.Event `json:"events"`
 }
 
-func (s *Service) GetEventsByBreak(r *GetEventsByBreakRequest) (*GetEventsByBreakResponse, error) {
+func (s *Service) GetBreakEvents(r *GetBreakEventsRequest) (*GetBreakEventsResponse, error) {
 	events, err := s.EventRepository.GetAllByBreak(r.BreakId)
 	if err != nil {
 		return nil, err
 	}
 
-	return &GetEventsByBreakResponse{
+	return &GetBreakEventsResponse{
 		Events: events,
 	}, nil
 }

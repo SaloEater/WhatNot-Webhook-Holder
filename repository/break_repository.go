@@ -9,5 +9,5 @@ type BreakRepository interface {
 	Get(int64) (*entity.Break, error)
 	Delete(int64) error
 	Update(p *entity.Break) error
-	GetBreaksByDay(int64) ([]*entity.Break, error)
+	GetBreaksByStreamId(int64) ([]*entity.Break, error)
 }
