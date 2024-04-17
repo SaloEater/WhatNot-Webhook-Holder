@@ -68,6 +68,7 @@ func main() {
 		BreakRepository:  &repository_sqlx.BreakRepository{DB: db},
 		StreamRepository: &repository_sqlx.DayRepository{DB: db},
 		EventRepository:  &repository_sqlx.EventRepository{DB: db},
+		DemoRepository:   &repository_sqlx.DemoRepository{DB: db},
 	}
 
 	apiO := api.API{Service: svc}
@@ -81,6 +82,8 @@ func main() {
 	http.HandleFunc("/api/stream/add", routeBuilder.WrapRoute(apiO.AddStream, api.HttpPost, true))
 	http.HandleFunc("/api/stream/breaks", routeBuilder.WrapRoute(apiO.GetStreamBreaks, api.HttpPost, true))
 	http.HandleFunc("/api/stream/delete", routeBuilder.WrapRoute(apiO.DeleteStream, api.HttpPost, true))
+	http.HandleFunc("/api/stream/demo", routeBuilder.WrapRoute(apiO.GetDemo, api.HttpPost, true))
+	http.HandleFunc("/api/demo/update", routeBuilder.WrapRoute(apiO.UpdateDemo, api.HttpPost, true))
 	http.HandleFunc("/api/break", routeBuilder.WrapRoute(apiO.GetBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/add", routeBuilder.WrapRoute(apiO.AddBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/delete", routeBuilder.WrapRoute(apiO.DeleteBreak, api.HttpPost, true))

@@ -6,4 +6,5 @@ type Service struct {
 	repository.BreakRepository
 	repository.StreamRepository
 	repository.EventRepository
+	repository.DemoRepository
 }

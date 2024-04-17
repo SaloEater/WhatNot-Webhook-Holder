@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"time"
 )
@@ -25,6 +26,15 @@ func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
 	}
 
 	stream.Id = id
+
+	_, err = s.DemoRepository.Create(&entity.Demo{
+		StreamId:          stream.Id,
+		BreakId:           sql.NullInt64{Valid: false},
+		HighlightUsername: "",
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &AddStreamResponse{GetStreamsStream: GetStreamsStream{
 		Id:        stream.Id,
