@@ -6,10 +6,11 @@ import (
 )
 
 type UpdateBreakRequest struct {
-	Id        int64  `json:"id"`
-	Name      string `json:"name"`
-	StartDate string `json:"start_date"`
-	EndDate   string `json:"end_date"`
+	Id          int64  `json:"id"`
+	Name        string `json:"name"`
+	StartDate   string `json:"start_date"`
+	EndDate     string `json:"end_date"`
+	HighBidTeam string `json:"high_bid_team"`
 }
 
 type UpdateBreakResponse struct {
@@ -40,6 +41,7 @@ func (s *Service) UpdateBreak(r *UpdateBreakRequest) (*UpdateBreakResponse, erro
 	oldBreak.Name = r.Name
 	oldBreak.StartDate = startDate
 	oldBreak.EndDate = endDate
+	oldBreak.HighBidTeam = r.HighBidTeam
 	err = s.BreakRepository.Update(oldBreak)
 	if err == nil {
 		response.Success = true

@@ -1,0 +1,1 @@
+ALTER TABLE break ADD COLUMN high_bid_team varchar(255) NOT NULL DEFAULT ''
