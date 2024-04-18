@@ -80,6 +80,7 @@ func main() {
 	http.HandleFunc("/api/streams", routeBuilder.WrapRoute(apiO.GetStreams, api.HttpGet, true))
 	http.HandleFunc("/api/stream", routeBuilder.WrapRoute(apiO.GetDay, api.HttpPost, true))
 	http.HandleFunc("/api/stream/add", routeBuilder.WrapRoute(apiO.AddStream, api.HttpPost, true))
+	http.HandleFunc("/api/stream/usernames", routeBuilder.WrapRoute(apiO.GetUsernames, api.HttpPost, true))
 	http.HandleFunc("/api/stream/breaks", routeBuilder.WrapRoute(apiO.GetStreamBreaks, api.HttpPost, true))
 	http.HandleFunc("/api/stream/delete", routeBuilder.WrapRoute(apiO.DeleteStream, api.HttpPost, true))
 	http.HandleFunc("/api/stream/demo", routeBuilder.WrapRoute(apiO.GetDemo, api.HttpPost, true))

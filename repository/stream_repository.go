@@ -8,4 +8,5 @@ type StreamRepository interface {
 	Delete(int64) error
 	Update(*entity.Stream) error
 	Create(*entity.Stream) (int64, error)
+	GetUsernames(int64) ([]string, error)
 }

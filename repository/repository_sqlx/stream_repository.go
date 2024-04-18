@@ -23,7 +23,14 @@ func (r *DayRepository) Get(id int64) (*entity.Stream, error) {
 }
 
 func (r *DayRepository) Delete(id int64) error {
-	_, err := r.DB.Exec(`UPDATE stream SET is_deleted = true WHERE id = $1`, id)
+	_, err := r.DB.Exec(`
+WITH updatedStream AS (UPDATE stream SET is_deleted = TRUE WHERE id = $1),
+breakIDs AS (SELECT id FROM break WHERE day_id=$1),
+updatedBreaks AS (UPDATE break SET is_deleted = true WHERE id IN (SELECT * FROM breakIDs)),
+updatedEvents AS (UPDATE event SET is_deleted = true WHERE break_id IN (SELECT * FROM breakIDs))
+SELECT TRUE
+
+`, id)
 	return err
 }
 
@@ -58,4 +65,16 @@ func (r *DayRepository) Create(day *entity.Stream) (int64, error) {
 		return 0, fmt.Errorf("no rows returned after INSERT")
 	}
 	return id, err
+}
+
+func (r *DayRepository) GetUsernames(id int64) ([]string, error) {
+	usernames := []string{}
+	err := r.DB.Select(&usernames, `
+SELECT DISTINCT customer from event
+WHERE is_deleted IS FALSE
+GROUP BY customer
+HAVING COUNT(*) > 10
+`)
+
+	return usernames, err
 }

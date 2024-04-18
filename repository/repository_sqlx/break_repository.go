@@ -44,7 +44,11 @@ func (r *BreakRepository) Get(id int64) (*entity.Break, error) {
 }
 
 func (r *BreakRepository) Delete(id int64) error {
-	_, err := r.DB.Exec(`UPDATE break SET is_deleted = true WHERE id = $1`, id)
+	_, err := r.DB.Exec(`
+WITH updatedBreak AS (UPDATE break SET is_deleted = true WHERE id = $1),
+updatedEvent AS (UPDATE event SET is_deleted = true WHERE break_id = $1)
+SELECT TRUE
+`, id)
 	return err
 }
 
