@@ -1,6 +1,9 @@
 package service
 
 import (
+	"errors"
+	"fmt"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 )
 
@@ -9,10 +12,20 @@ type GetBreakRequest struct {
 }
 
 func (s *Service) GetBreak(r *GetBreakRequest) (*entity.Break, error) {
-	dayBreak, err := s.BreakRepository.Get(r.Id)
-	if err != nil {
-		return nil, err
+	key := cache.IdToKey(r.Id)
+
+	if !s.BreakCache.Has(key) {
+		dayBreak, err := s.BreakRepository.Get(r.Id)
+		if err != nil {
+			return nil, err
+		}
+		s.BreakCache.Set(cache.IdToKey(r.Id), dayBreak)
 	}
 
-	return dayBreak, nil
+	cached, found := s.BreakCache.Get(key)
+	if !found {
+		return nil, errors.New(fmt.Sprintf("break %d not found", r.Id))
+	}
+
+	return cached, nil
 }

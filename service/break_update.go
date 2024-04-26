@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
 	"time"
 )
 
@@ -46,6 +47,8 @@ func (s *Service) UpdateBreak(r *UpdateBreakRequest) (*UpdateBreakResponse, erro
 	if err == nil {
 		response.Success = true
 	}
+
+	s.BreakCache.Set(cache.IdToKey(r.Id), oldBreak)
 
 	return response, err
 

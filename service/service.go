@@ -1,10 +1,16 @@
 package service
 
-import "github.com/SaloEater/WhatNot-Webhook-Holder/repository"
+import (
+	cacheInterface "github.com/SaloEater/WhatNot-Webhook-Holder/cache"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/repository"
+)
 
 type Service struct {
 	repository.BreakRepository
 	repository.StreamRepository
 	repository.EventRepository
 	repository.DemoRepository
+	DemoCache  cacheInterface.Cache[*entity.Demo]
+	BreakCache cacheInterface.Cache[*entity.Break]
 }

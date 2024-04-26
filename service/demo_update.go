@@ -2,6 +2,7 @@ package service
 
 import (
 	"database/sql"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 )
 
@@ -35,6 +36,7 @@ func (s *Service) UpdateDemo(r *UpdateDemoRequest) (*UpdateDemoResponse, error) 
 	if err == nil {
 		response.Success = true
 	}
+	s.DemoCache.Set(cache.IdToKey(r.Id), demo)
 
 	return &response, err
 }

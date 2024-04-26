@@ -1,6 +1,11 @@
 package service
 
-import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+import (
+	"errors"
+	"fmt"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+)
 
 type GetDemoRequest struct {
 	StreamId int64 `json:"stream_id"`
@@ -14,22 +19,33 @@ type GetDemoResponse struct {
 }
 
 func (s *Service) GetDemo(r *GetDemoRequest) (*GetDemoResponse, error) {
-	demo, err := s.DemoRepository.GetByStream(r.StreamId)
-	if demo == nil {
-		return nil, err
+	key := cache.IdToKey(r.StreamId)
+	var err error
+	var breakId int64
+
+	if !s.DemoCache.Has(key) {
+		demo, err := s.DemoRepository.GetByStream(r.StreamId)
+		if demo == nil {
+			return nil, err
+		}
+		s.DemoCache.Set(key, demo)
 	}
 
-	var breakId int64
-	if demo.BreakId.Valid {
-		breakId = demo.BreakId.Int64
+	cached, found := s.DemoCache.Get(key)
+	if !found {
+		return nil, errors.New(fmt.Sprintf("demo for stream %d not found", r.StreamId))
+	}
+
+	if cached.BreakId.Valid {
+		breakId = cached.BreakId.Int64
 	} else {
 		breakId = entity.NoBreakId
 	}
 
 	return &GetDemoResponse{
-		Id:                demo.Id,
-		StreamId:          demo.StreamId,
+		Id:                cached.Id,
+		StreamId:          cached.StreamId,
 		BreakId:           breakId,
-		HighlightUsername: demo.HighlightUsername,
+		HighlightUsername: cached.HighlightUsername,
 	}, err
 }

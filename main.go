@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/api"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/api/webhook"
+	go_cache "github.com/SaloEater/WhatNot-Webhook-Holder/cache/go-cache"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/repository/repository_sqlx"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/service"
 	"github.com/golang-migrate/migrate/v4"
@@ -13,6 +15,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 // CORS middleware handler
@@ -64,11 +67,16 @@ func main() {
 		return
 	}
 
+	demoCache := go_cache.CreateCache[*entity.Demo](10 * time.Hour)
+	breakCache := go_cache.CreateCache[*entity.Break](10 * time.Hour)
+
 	svc := &service.Service{
 		BreakRepository:  &repository_sqlx.BreakRepository{DB: db},
 		StreamRepository: &repository_sqlx.DayRepository{DB: db},
 		EventRepository:  &repository_sqlx.EventRepository{DB: db},
 		DemoRepository:   &repository_sqlx.DemoRepository{DB: db},
+		DemoCache:        &demoCache,
+		BreakCache:       &breakCache,
 	}
 
 	apiO := api.API{Service: svc}
