@@ -52,7 +52,8 @@ func (r *EventRepository) Update(event *entity.Event) error {
 		team = :team,
 		is_giveaway = :is_giveaway,
 		note = :note,
-		quantity = :quantity
+		quantity = :quantity,
+		giveaway_type = :giveaway_type
 	WHERE id = :id`, event)
 
 	return err
@@ -69,7 +70,8 @@ func (r *EventRepository) Create(event *entity.Event) (int64, error) {
 		is_giveaway,
 		note,
 		quantity,
-        is_deleted
+        is_deleted,
+	   	giveaway_type
 	) VALUES (
 		:break_id,
 		(SELECT COALESCE(MAX(index), 0) + 1 FROM event WHERE break_id = :break_id),
@@ -79,7 +81,8 @@ func (r *EventRepository) Create(event *entity.Event) (int64, error) {
 		:is_giveaway,
 		:note,
 		:quantity,
-		:is_deleted
+		:is_deleted,
+		:giveaway_type
 	) RETURNING (id)`, event)
 	if err != nil {
 		return id, err
@@ -123,7 +126,8 @@ func (r *EventRepository) UpdateAll(events []*entity.Event) error {
 			team = :team,
 			is_giveaway = :is_giveaway,
 			note = :note,
-			quantity = :quantity
+			quantity = :quantity,
+			giveaway_type = :giveaway_type
 		WHERE id = :id;`, event)
 		if err != nil {
 			return err

@@ -1,0 +1,1 @@
+ALTER TABLE event ADD COLUMN giveaway_type int DEFAULT 0

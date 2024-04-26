@@ -1,5 +1,7 @@
 package service
 
+import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+
 type UpdateAllEventsRequest struct {
 	Events []*UpdateEventRequest `json:"events"`
 }
@@ -33,6 +35,7 @@ func (s *Service) UpdateAllEvents(r *UpdateAllEventsRequest) (*UpdateAllEventsRe
 		event.IsGiveaway = requestEvent.IsGiveaway
 		event.Note = requestEvent.Note
 		event.Quantity = requestEvent.Quantity
+		event.GiveawayType = entity.GiveawayType(requestEvent.GiveawayType)
 		events[i] = event
 	}
 
