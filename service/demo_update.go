@@ -36,7 +36,7 @@ func (s *Service) UpdateDemo(r *UpdateDemoRequest) (*UpdateDemoResponse, error) 
 	if err == nil {
 		response.Success = true
 	}
-	s.DemoCache.Set(cache.IdToKey(r.Id), demo)
+	s.DemoCache.Set(cache.IdToKey(demo.StreamId), demo)
 
 	return &response, err
 }
