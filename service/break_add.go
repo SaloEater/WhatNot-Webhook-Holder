@@ -31,12 +31,13 @@ func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
 
 	var id int64
 	id, err = s.BreakRepository.Create(&entity.Break{
-		DayId:       r.DayId,
-		Name:        r.Name,
-		StartDate:   startDate,
-		EndDate:     endDate,
-		HighBidTeam: "",
-		IsDeleted:   false,
+		DayId:        r.DayId,
+		Name:         r.Name,
+		StartDate:    startDate,
+		EndDate:      endDate,
+		HighBidTeam:  "",
+		GiveawayTeam: "",
+		IsDeleted:    false,
 	})
 	if err != nil {
 		return nil, err

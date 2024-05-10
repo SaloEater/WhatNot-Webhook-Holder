@@ -5,9 +5,10 @@ import "time"
 type Break struct {
 	Id int64 `json:"id" db:"id"`
 
-	DayId       int64  `json:"day_id" db:"day_id"`
-	Name        string `json:"name" db:"name"`
-	HighBidTeam string `json:"high_bid_team" db:"high_bid_team"`
+	DayId        int64  `json:"day_id" db:"day_id"`
+	Name         string `json:"name" db:"name"`
+	HighBidTeam  string `json:"high_bid_team" db:"high_bid_team"`
+	GiveawayTeam string `json:"giveaway_team" db:"giveaway_team"`
 
 	StartDate time.Time `json:"start_date" db:"start_date"`
 	EndDate   time.Time `json:"end_date" db:"end_date"`
