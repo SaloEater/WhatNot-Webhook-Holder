@@ -1,0 +1,1 @@
+ALTER TABLE break ADD COLUMN giveaway_team varchar(255) NOT NULL DEFAULT ''
