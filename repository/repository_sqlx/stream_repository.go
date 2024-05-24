@@ -16,6 +16,12 @@ func (r *DayRepository) GetAll() ([]*entity.Stream, error) {
 	return days, err
 }
 
+func (r *DayRepository) GetAllByChannelId(channelId int64) ([]*entity.Stream, error) {
+	days := []*entity.Stream{}
+	err := r.DB.Select(&days, `SELECT * FROM stream WHERE is_deleted = false AND channel_id = $1`, channelId)
+	return days, err
+}
+
 func (r *DayRepository) Get(id int64) (*entity.Stream, error) {
 	var day entity.Stream
 	err := r.DB.Get(&day, `SELECT * FROM stream where id = $1 AND is_deleted = false`, id)
@@ -36,6 +42,7 @@ SELECT TRUE
 
 func (r *DayRepository) Update(day *entity.Stream) error {
 	_, err := r.DB.NamedExec(`UPDATE stream SET
+	  	name = :name,
 		created_at = :created_at
 	WHERE id = :id`, day)
 
@@ -45,11 +52,12 @@ func (r *DayRepository) Update(day *entity.Stream) error {
 func (r *DayRepository) Create(day *entity.Stream) (int64, error) {
 	var id int64
 	rows, err := r.DB.NamedQuery(`INSERT INTO stream (
-		name, created_at, is_deleted
+		name, created_at, is_deleted, channel_id
 	) VALUES (
 	  	:name,
 		:created_at,
-		:is_deleted
+		:is_deleted,
+		:channel_id
 	) RETURNING (id)`, day)
 	if err != nil {
 		return id, err

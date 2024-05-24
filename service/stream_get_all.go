@@ -1,29 +1,33 @@
 package service
 
-type GetStreamsStream struct {
+type GetChannelStreamsRequest struct {
+	ChannelId int64 `json:"channel_id"`
+}
+
+type GetStreamResponse struct {
 	Id        int64  `json:"id"`
 	Name      string `json:"name"`
 	CreatedAt int64  `json:"created_at"`
 }
 
-type GetStreamsResponse struct {
-	Streams []*GetStreamsStream `json:"streams"`
+type GetChannelStreamsResponse struct {
+	Streams []*GetStreamResponse `json:"streams"`
 }
 
-func (s *Service) GetStreams() (*GetStreamsResponse, error) {
-	streams, err := s.StreamRepository.GetAll()
+func (s *Service) GetChannelStreams(r *GetChannelStreamsRequest) (*GetChannelStreamsResponse, error) {
+	streams, err := s.StreamRepository.GetAllByChannelId(r.ChannelId)
 	if err != nil {
 		return nil, err
 	}
 
-	streamResponses := make([]*GetStreamsStream, len(streams))
+	streamResponses := make([]*GetStreamResponse, len(streams))
 	for i, stream := range streams {
-		streamResponse := GetStreamsStream{}
+		streamResponse := GetStreamResponse{}
 		streamResponse.Id = stream.Id
 		streamResponse.CreatedAt = stream.CreatedAt.UnixMilli()
 		streamResponse.Name = stream.Name
 		streamResponses[i] = &streamResponse
 	}
 
-	return &GetStreamsResponse{Streams: streamResponses}, nil
+	return &GetChannelStreamsResponse{Streams: streamResponses}, nil
 }

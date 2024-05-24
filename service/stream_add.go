@@ -7,11 +7,12 @@ import (
 )
 
 type AddStreamRequest struct {
-	Name string `json:"name"`
+	Name      string `json:"name"`
+	ChannelId int64  `json:"channel_id"`
 }
 
 type AddStreamResponse struct {
-	GetStreamsStream
+	GetStreamResponse
 }
 
 func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
@@ -19,6 +20,7 @@ func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
 		Name:      r.Name,
 		CreatedAt: time.Now().UTC(),
 		IsDeleted: false,
+		ChannelId: r.ChannelId,
 	}
 	id, err := s.StreamRepository.Create(&stream)
 	if err != nil {
@@ -36,7 +38,7 @@ func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
 		return nil, err
 	}
 
-	return &AddStreamResponse{GetStreamsStream: GetStreamsStream{
+	return &AddStreamResponse{GetStreamResponse: GetStreamResponse{
 		Id:        stream.Id,
 		Name:      stream.Name,
 		CreatedAt: stream.CreatedAt.UnixMilli(),

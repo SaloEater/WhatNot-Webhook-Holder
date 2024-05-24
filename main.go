@@ -71,12 +71,13 @@ func main() {
 	breakCache := go_cache.CreateCache[*entity.Break](10 * time.Hour)
 
 	svc := &service.Service{
-		BreakRepository:  &repository_sqlx.BreakRepository{DB: db},
-		StreamRepository: &repository_sqlx.DayRepository{DB: db},
-		EventRepository:  &repository_sqlx.EventRepository{DB: db},
-		DemoRepository:   &repository_sqlx.DemoRepository{DB: db},
-		DemoCache:        &demoCache,
-		BreakCache:       &breakCache,
+		BreakRepository:   &repository_sqlx.BreakRepository{DB: db},
+		StreamRepository:  &repository_sqlx.DayRepository{DB: db},
+		EventRepository:   &repository_sqlx.EventRepository{DB: db},
+		DemoRepository:    &repository_sqlx.DemoRepository{DB: db},
+		ChannelRepository: &repository_sqlx.ChannelRepository{DB: db},
+		DemoCache:         &demoCache,
+		BreakCache:        &breakCache,
 	}
 
 	apiO := api.API{Service: svc}
@@ -85,19 +86,29 @@ func main() {
 
 	http.HandleFunc("/webhook/product_sold", routeBuilder.WrapRoute(webhook.ProductSold, api.HttpPost, true))
 
-	http.HandleFunc("/api/streams", routeBuilder.WrapRoute(apiO.GetStreams, api.HttpGet, true))
+	http.HandleFunc("/api/channel", routeBuilder.WrapRoute(apiO.GetChannel, api.HttpPost, true))
+	http.HandleFunc("/api/channels", routeBuilder.WrapRoute(apiO.GetChannels, api.HttpGet, true))
+	http.HandleFunc("/api/channel/add", routeBuilder.WrapRoute(apiO.AddChannel, api.HttpPost, true))
+	http.HandleFunc("/api/channel/delete", routeBuilder.WrapRoute(apiO.DeleteChannel, api.HttpPost, true))
+	http.HandleFunc("/api/channel/update", routeBuilder.WrapRoute(apiO.UpdateChannel, api.HttpPost, true))
+	http.HandleFunc("/api/channel/by_stream", routeBuilder.WrapRoute(apiO.GetChannelByStream, api.HttpPost, true))
+
+	http.HandleFunc("/api/channel/streams", routeBuilder.WrapRoute(apiO.GetChannelStreams, api.HttpPost, true))
 	http.HandleFunc("/api/stream", routeBuilder.WrapRoute(apiO.GetDay, api.HttpPost, true))
 	http.HandleFunc("/api/stream/add", routeBuilder.WrapRoute(apiO.AddStream, api.HttpPost, true))
 	http.HandleFunc("/api/stream/usernames", routeBuilder.WrapRoute(apiO.GetUsernames, api.HttpPost, true))
-	http.HandleFunc("/api/stream/breaks", routeBuilder.WrapRoute(apiO.GetStreamBreaks, api.HttpPost, true))
 	http.HandleFunc("/api/stream/delete", routeBuilder.WrapRoute(apiO.DeleteStream, api.HttpPost, true))
 	http.HandleFunc("/api/stream/demo", routeBuilder.WrapRoute(apiO.GetDemo, api.HttpPost, true))
+
 	http.HandleFunc("/api/demo/update", routeBuilder.WrapRoute(apiO.UpdateDemo, api.HttpPost, true))
+
+	http.HandleFunc("/api/stream/breaks", routeBuilder.WrapRoute(apiO.GetStreamBreaks, api.HttpPost, true))
 	http.HandleFunc("/api/break", routeBuilder.WrapRoute(apiO.GetBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/add", routeBuilder.WrapRoute(apiO.AddBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/delete", routeBuilder.WrapRoute(apiO.DeleteBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/update", routeBuilder.WrapRoute(apiO.UpdateBreak, api.HttpPost, true))
 	http.HandleFunc("/api/break/events", routeBuilder.WrapRoute(apiO.GetBreakEvents, api.HttpPost, true))
+
 	http.HandleFunc("/api/event/add", routeBuilder.WrapRoute(apiO.AddEvent, api.HttpPost, true))
 	http.HandleFunc("/api/event/update", routeBuilder.WrapRoute(apiO.UpdateEvent, api.HttpPost, true))
 	http.HandleFunc("/api/event/update_all", routeBuilder.WrapRoute(apiO.UpdateAllEvents, api.HttpPost, true))
