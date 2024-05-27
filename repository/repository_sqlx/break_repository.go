@@ -13,7 +13,7 @@ type BreakRepository struct {
 func (r *BreakRepository) Create(dayBreak *entity.Break) (int64, error) {
 	var id int64
 	rows, err := r.DB.NamedQuery(`INSERT INTO break (
-		day_id, name, start_date, end_date, is_deleted, high_bid_team, giveaway_team
+		day_id, name, start_date, end_date, is_deleted, high_bid_team, giveaway_team, high_bid_floor
 	) VALUES (
 		:day_id,
 		:name,
@@ -21,7 +21,8 @@ func (r *BreakRepository) Create(dayBreak *entity.Break) (int64, error) {
 		:end_date,
 		:is_deleted,
 		:high_bid_team,
-		:giveaway_team
+		:giveaway_team,
+	  	:high_bid_floor
 	) RETURNING (id)`, dayBreak)
 	if err != nil {
 		return id, err
@@ -56,7 +57,13 @@ SELECT TRUE
 
 func (r *BreakRepository) Update(dayBreak *entity.Break) error {
 	_, err := r.DB.NamedExec(`UPDATE break SET
-		day_id = :day_id, name = :name, start_date = :start_date, end_date = :end_date, high_bid_team = :high_bid_team, giveaway_team = :giveaway_team
+		day_id = :day_id,
+		name = :name,
+		start_date = :start_date,
+		end_date = :end_date,
+		high_bid_team = :high_bid_team,
+		giveaway_team = :giveaway_team,
+		high_bid_floor = :high_bid_floor
 	WHERE id = :id`, dayBreak)
 
 	return err

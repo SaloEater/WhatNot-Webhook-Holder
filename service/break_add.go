@@ -38,6 +38,7 @@ func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
 		HighBidTeam:  "",
 		GiveawayTeam: "",
 		IsDeleted:    false,
+		HighBidFloor: 0,
 	})
 	if err != nil {
 		return nil, err

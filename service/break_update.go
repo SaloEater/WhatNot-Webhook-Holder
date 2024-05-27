@@ -13,6 +13,7 @@ type UpdateBreakRequest struct {
 	EndDate      string `json:"end_date"`
 	HighBidTeam  string `json:"high_bid_team"`
 	GiveawayTeam string `json:"giveaway_team"`
+	HighBidFloor int    `json:"high_bid_floor"`
 }
 
 type UpdateBreakResponse struct {
@@ -45,6 +46,7 @@ func (s *Service) UpdateBreak(r *UpdateBreakRequest) (*UpdateBreakResponse, erro
 	oldBreak.EndDate = endDate
 	oldBreak.HighBidTeam = r.HighBidTeam
 	oldBreak.GiveawayTeam = r.GiveawayTeam
+	oldBreak.HighBidFloor = r.HighBidFloor
 	err = s.BreakRepository.Update(oldBreak)
 	if err == nil {
 		response.Success = true

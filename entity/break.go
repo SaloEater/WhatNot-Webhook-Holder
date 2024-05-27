@@ -9,6 +9,7 @@ type Break struct {
 	Name         string `json:"name" db:"name"`
 	HighBidTeam  string `json:"high_bid_team" db:"high_bid_team"`
 	GiveawayTeam string `json:"giveaway_team" db:"giveaway_team"`
+	HighBidFloor int    `json:"high_bid_floor" db:"high_bid_floor"`
 
 	StartDate time.Time `json:"start_date" db:"start_date"`
 	EndDate   time.Time `json:"end_date" db:"end_date"`
