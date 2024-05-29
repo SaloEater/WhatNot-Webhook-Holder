@@ -30,7 +30,7 @@ func (s *Service) GetDemo(r *GetDemoRequest) (*GetDemoResponse, error) {
 		}
 		s.DemoCache.Set(key, demo)
 		streamKey := cache.IdToKey(demo.StreamId)
-		s.DemoCache.Set(streamKey, demo)
+		s.DemoByStreamCache.Set(streamKey, demo)
 	}
 
 	cached, found := s.DemoCache.Get(key)
@@ -41,7 +41,7 @@ func (s *Service) GetDemo(r *GetDemoRequest) (*GetDemoResponse, error) {
 	if cached.BreakId.Valid {
 		breakId = cached.BreakId.Int64
 	} else {
-		breakId = entity.NoBreakId
+		breakId = entity.NoId
 	}
 
 	return &GetDemoResponse{

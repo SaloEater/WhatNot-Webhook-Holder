@@ -22,7 +22,7 @@ func (s *Service) UpdateDemo(r *UpdateDemoRequest) (*UpdateDemoResponse, error) 
 		return nil, err
 	}
 
-	if r.BreakId == entity.NoBreakId {
+	if r.BreakId == entity.NoId {
 		demo.BreakId = sql.NullInt64{Valid: false}
 	} else {
 		demo.BreakId = sql.NullInt64{Int64: r.BreakId, Valid: true}
@@ -34,9 +34,10 @@ func (s *Service) UpdateDemo(r *UpdateDemoRequest) (*UpdateDemoResponse, error) 
 	if err != nil {
 		return &UpdateDemoResponse{Success: false}, err
 	}
-	s.DemoCache.Set(cache.IdToKey(demo.StreamId), demo)
+	s.DemoCache.Set(cache.IdToKey(demo.Id), demo)
+	s.DemoByStreamCache.Set(cache.IdToKey(demo.StreamId), demo)
 
-	err = s.updateChannelDemo(demo.Id)
+	err = s.updateChannelDemo(demo.StreamId, demo.Id)
 	if err != nil {
 		return &UpdateDemoResponse{Success: false}, err
 	}
@@ -44,13 +45,13 @@ func (s *Service) UpdateDemo(r *UpdateDemoRequest) (*UpdateDemoResponse, error) 
 	return &UpdateDemoResponse{Success: true}, err
 }
 
-func (s *Service) updateChannelDemo(streamId int64) error {
+func (s *Service) updateChannelDemo(streamId int64, demoId int64) error {
 	channel, err := s.ChannelRepository.GetByStream(streamId)
 	if err != nil {
 		return err
 	}
 
-	channel.DemoId = sql.NullInt64{Valid: true, Int64: streamId}
+	channel.DemoId = sql.NullInt64{Valid: true, Int64: demoId}
 	err = s.ChannelRepository.Update(channel)
 	if err != nil {
 		return err

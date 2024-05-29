@@ -11,7 +11,13 @@ type GetChannelRequest struct {
 	Id int64 `json:"id"`
 }
 
-func (s *Service) GetChannel(r *GetChannelRequest) (*entity.Channel, error) {
+type GetChannelResponse struct {
+	Id     int64  `json:"id"`
+	Name   string `json:"name"`
+	DemoId int64  `json:"demo_id"`
+}
+
+func (s *Service) GetChannel(r *GetChannelRequest) (*GetChannelResponse, error) {
 	key := cache.IdToKey(r.Id)
 
 	if !s.ChannelCache.Has(key) {
@@ -27,5 +33,16 @@ func (s *Service) GetChannel(r *GetChannelRequest) (*entity.Channel, error) {
 		return nil, errors.New(fmt.Sprintf("channel for id %d not found", r.Id))
 	}
 
-	return cached, nil
+	response := &GetChannelResponse{
+		Id:   cached.Id,
+		Name: cached.Name,
+	}
+
+	if cached.DemoId.Valid {
+		response.DemoId = cached.DemoId.Int64
+	} else {
+		response.DemoId = entity.NoId
+	}
+
+	return response, nil
 }

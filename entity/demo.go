@@ -2,7 +2,7 @@ package entity
 
 import "database/sql"
 
-const NoBreakId = 0
+const NoId = 0
 
 type Demo struct {
 	Id                int64         `db:"id" json:"id"`

@@ -16,17 +16,17 @@ func (s *Service) GetDemoByStream(r *GetDemoByStreamRequest) (*GetDemoResponse, 
 	var err error
 	var breakId int64
 
-	if !s.DemoCache.Has(key) {
+	if !s.DemoByStreamCache.Has(key) {
 		demo, err := s.DemoRepository.GetByStream(r.StreamId)
 		if demo == nil {
 			return nil, err
 		}
-		s.DemoCache.Set(key, demo)
+		s.DemoByStreamCache.Set(key, demo)
 		idKey := cache.IdToKey(demo.Id)
 		s.DemoCache.Set(idKey, demo)
 	}
 
-	cached, found := s.DemoCache.Get(key)
+	cached, found := s.DemoByStreamCache.Get(key)
 	if !found {
 		return nil, errors.New(fmt.Sprintf("demo for stream %d not found", r.StreamId))
 	}
@@ -34,7 +34,7 @@ func (s *Service) GetDemoByStream(r *GetDemoByStreamRequest) (*GetDemoResponse, 
 	if cached.BreakId.Valid {
 		breakId = cached.BreakId.Int64
 	} else {
-		breakId = entity.NoBreakId
+		breakId = entity.NoId
 	}
 
 	return &GetDemoResponse{

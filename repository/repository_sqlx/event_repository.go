@@ -27,7 +27,7 @@ func (r *EventRepository) GetAll(ids []int64) ([]*entity.Event, error) {
 }
 
 func (r *EventRepository) GetAllByBreak(breakId int64) ([]*entity.Event, error) {
-	var events []*entity.Event
+	events := []*entity.Event{}
 	err := r.DB.Select(&events, `SELECT * FROM event WHERE break_id = $1 AND is_deleted = false`, breakId)
 	return events, err
 }
