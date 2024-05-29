@@ -1,0 +1,2 @@
+ALTER TABLE channel ADD COLUMN demo_id int DEFAULT NULL;
+ALTER TABLE channel ADD CONSTRAINT fk_demo FOREIGN KEY (demo_id) REFERENCES demo(id)

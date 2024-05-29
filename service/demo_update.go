@@ -29,14 +29,34 @@ func (s *Service) UpdateDemo(r *UpdateDemoRequest) (*UpdateDemoResponse, error) 
 	}
 	demo.HighlightUsername = r.HighlightUsername
 
-	response := UpdateDemoResponse{}
-
 	err = s.DemoRepository.Update(demo)
 
-	if err == nil {
-		response.Success = true
+	if err != nil {
+		return &UpdateDemoResponse{Success: false}, err
 	}
 	s.DemoCache.Set(cache.IdToKey(demo.StreamId), demo)
 
-	return &response, err
+	err = s.updateChannelDemo(demo.Id)
+	if err != nil {
+		return &UpdateDemoResponse{Success: false}, err
+	}
+
+	return &UpdateDemoResponse{Success: true}, err
+}
+
+func (s *Service) updateChannelDemo(streamId int64) error {
+	channel, err := s.ChannelRepository.GetByStream(streamId)
+	if err != nil {
+		return err
+	}
+
+	channel.DemoId = sql.NullInt64{Valid: true, Int64: streamId}
+	err = s.ChannelRepository.Update(channel)
+	if err != nil {
+		return err
+	}
+
+	key := cache.IdToKey(channel.Id)
+	s.ChannelCache.Set(key, channel)
+	return nil
 }

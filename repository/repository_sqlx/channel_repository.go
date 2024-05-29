@@ -35,7 +35,8 @@ func (r *ChannelRepository) Delete(id int64) error {
 
 func (r *ChannelRepository) Update(channel *entity.Channel) error {
 	_, err := r.DB.NamedExec(`UPDATE channel SET
-	  	name = :name
+	  	name = :name,
+	  	demo_id = :demo_id
 	WHERE id = :id`, channel)
 
 	return err

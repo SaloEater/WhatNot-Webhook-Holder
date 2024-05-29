@@ -12,6 +12,8 @@ type Service struct {
 	repository.EventRepository
 	repository.DemoRepository
 	repository.ChannelRepository
-	DemoCache  cacheInterface.Cache[*entity.Demo]
-	BreakCache cacheInterface.Cache[*entity.Break]
+	DemoCache    cacheInterface.Cache[*entity.Demo]
+	BreakCache   cacheInterface.Cache[*entity.Break]
+	StreamCache  cacheInterface.Cache[*entity.Stream]
+	ChannelCache cacheInterface.Cache[*entity.Channel]
 }

@@ -69,6 +69,8 @@ func main() {
 
 	demoCache := go_cache.CreateCache[*entity.Demo](10 * time.Hour)
 	breakCache := go_cache.CreateCache[*entity.Break](10 * time.Hour)
+	streamCache := go_cache.CreateCache[*entity.Stream](10 * time.Hour)
+	channelCache := go_cache.CreateCache[*entity.Channel](10 * time.Hour)
 
 	svc := &service.Service{
 		BreakRepository:   &repository_sqlx.BreakRepository{DB: db},
@@ -78,6 +80,8 @@ func main() {
 		ChannelRepository: &repository_sqlx.ChannelRepository{DB: db},
 		DemoCache:         &demoCache,
 		BreakCache:        &breakCache,
+		StreamCache:       &streamCache,
+		ChannelCache:      &channelCache,
 	}
 
 	apiO := api.API{Service: svc}
@@ -98,8 +102,8 @@ func main() {
 	http.HandleFunc("/api/stream/add", routeBuilder.WrapRoute(apiO.AddStream, api.HttpPost, true))
 	http.HandleFunc("/api/stream/usernames", routeBuilder.WrapRoute(apiO.GetUsernames, api.HttpPost, true))
 	http.HandleFunc("/api/stream/delete", routeBuilder.WrapRoute(apiO.DeleteStream, api.HttpPost, true))
-	http.HandleFunc("/api/stream/demo", routeBuilder.WrapRoute(apiO.GetDemo, api.HttpPost, true))
 
+	http.HandleFunc("/api/stream/demo", routeBuilder.WrapRoute(apiO.GetDemoByStream, api.HttpPost, true))
 	http.HandleFunc("/api/demo/update", routeBuilder.WrapRoute(apiO.UpdateDemo, api.HttpPost, true))
 
 	http.HandleFunc("/api/stream/breaks", routeBuilder.WrapRoute(apiO.GetStreamBreaks, api.HttpPost, true))
