@@ -186,3 +186,21 @@ WHERE break_id = oldRecord.breakId;
 
 	return tx.Commit()
 }
+
+func (r *EventRepository) GetAvailableByChannelIDAndTeam(channelID int64, team string) (*entity.Event, error) {
+	var event entity.Event
+	err := r.DB.Get(&event, `
+		WITH selectedChannel AS (
+			SELECT demo_id FROM channel WHERE id = $1
+		), selectedDemo AS (
+				SELECT break_id FROM demo INNER JOIN selectedChannel as s on s.demo_id = demo.id
+		) SELECT * FROM event INNER JOIN selectedDemo d on event.break_id = d.break_id WHERE team = $2 AND is_deleted = false LIMIT 1
+	`, channelID, team)
+	return &event, err
+}
+
+func (r *EventRepository) GetLastIndex(breakId int64) (int, error) {
+	var index int
+	err := r.DB.Get(&index, `SELECT COALESCE(MAX(index), 0) FROM event WHERE break_id = $1 AND team != '' AND customer != ''`, breakId)
+	return index, err
+}

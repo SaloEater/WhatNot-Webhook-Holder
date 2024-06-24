@@ -121,6 +121,7 @@ func main() {
 	http.HandleFunc("/api/event/update_all", routeBuilder.WrapRoute(apiO.UpdateAllEvents, api.HttpPost, true))
 	http.HandleFunc("/api/event/move", routeBuilder.WrapRoute(apiO.MoveEvent, api.HttpPost, true))
 	http.HandleFunc("/api/event/delete", routeBuilder.WrapRoute(apiO.DeleteEvent, api.HttpPost, true))
+	http.HandleFunc("/api/event/activate_team", routeBuilder.WrapRoute(apiO.ActivateTeamEvent, api.HttpPost, true))
 
 	fmt.Println("Serving on port 5555")
 	err = http.ListenAndServe(":5555", handler)

@@ -13,6 +13,8 @@ const (
 	GiveawayTypeSlab
 )
 
+const NoCustomer = "?"
+
 func (gt *GiveawayType) Scan(value interface{}) error {
 	var i64 int64
 	i64, success := value.(int64)

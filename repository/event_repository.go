@@ -12,4 +12,6 @@ type EventRepository interface {
 	UpdateAll([]*entity.Event) error
 	Move(int64, int) error
 	GetAll([]int64) ([]*entity.Event, error)
+	GetAvailableByChannelIDAndTeam(int64, string) (*entity.Event, error)
+	GetLastIndex(int64) (int, error)
 }
