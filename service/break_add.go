@@ -23,9 +23,15 @@ func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
 		fmt.Println("Error parsing start date string:", err)
 		return nil, err
 	}
+
 	endDate, err := time.Parse(DateLayout, r.EndDate)
 	if err != nil {
 		fmt.Println("Error parsing end date string:", err)
+		return nil, err
+	}
+
+	channel, err := s.ChannelRepository.GetByStream(r.DayId)
+	if err != nil {
 		return nil, err
 	}
 
@@ -35,10 +41,10 @@ func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
 		Name:         r.Name,
 		StartDate:    startDate,
 		EndDate:      endDate,
-		HighBidTeam:  "",
+		HighBidTeam:  channel.DefaultHighBidTeam,
 		GiveawayTeam: "",
 		IsDeleted:    false,
-		HighBidFloor: 0,
+		HighBidFloor: channel.DefaultHighBidFloor,
 	})
 	if err != nil {
 		return nil, err
