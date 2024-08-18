@@ -15,6 +15,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -123,8 +124,14 @@ func main() {
 	http.HandleFunc("/api/event/delete", routeBuilder.WrapRoute(apiO.DeleteEvent, api.HttpPost, true))
 	http.HandleFunc("/api/event/activate_team", routeBuilder.WrapRoute(apiO.ActivateTeamEvent, api.HttpPost, true))
 
-	fmt.Println("Serving on port 5555")
-	err = http.ListenAndServe(":5555", handler)
+	port := os.Getenv("port")
+	portInt, err := strconv.Atoi(port)
+	if err != nil {
+		panic("Invalid port")
+	}
+
+	fmt.Println(fmt.Sprintf("Serving on port %d", portInt))
+	err = http.ListenAndServe(fmt.Sprintf(":%d", portInt), handler)
 	if err != nil {
 		fmt.Println("An error occurred during listening: " + err.Error())
 	}
