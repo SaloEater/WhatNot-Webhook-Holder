@@ -3,4 +3,4 @@ CREATE TABLE channel (
     name varchar(255),
     is_deleted bool
 );
-INSERT INTO channel (name) values ('Mount Olympus Breaks')
+INSERT INTO channel (name, is_deleted) values ('Mount Olympus Breaks', false)
