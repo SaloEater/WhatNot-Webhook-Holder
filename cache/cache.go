@@ -7,6 +7,7 @@ type Cache[T any] interface {
 	Set(string, T)
 	Has(string) bool
 	Delete(string)
+	Clear()
 }
 
 func IdToKey(id int64) string {

@@ -27,6 +27,10 @@ func (c *GoCache[T]) Has(key string) bool {
 	return found
 }
 
+func (c *GoCache[T]) Clear() {
+	c.Cache.Flush()
+}
+
 func CreateCache[T any](duration time.Duration) GoCache[T] {
 	c := cache.New(duration-5*time.Minute, duration)
 	return GoCache[T]{

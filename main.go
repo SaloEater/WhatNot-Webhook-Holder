@@ -124,6 +124,8 @@ func main() {
 	http.HandleFunc("/api/event/delete", routeBuilder.WrapRoute(apiO.DeleteEvent, api.HttpPost, true))
 	http.HandleFunc("/api/event/activate_team", routeBuilder.WrapRoute(apiO.ActivateTeamEvent, api.HttpPost, true))
 
+	http.HandleFunc("/api/cache/clear", routeBuilder.WrapRoute(apiO.CacheClear, api.HttpPost, true))
+
 	port := os.Getenv("port")
 	portInt, err := strconv.Atoi(port)
 	if err != nil {
