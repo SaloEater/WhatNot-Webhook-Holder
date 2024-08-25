@@ -12,9 +12,11 @@ type GetChannelRequest struct {
 }
 
 type GetChannelResponse struct {
-	Id     int64  `json:"id"`
-	Name   string `json:"name"`
-	DemoId int64  `json:"demo_id"`
+	Id                  int64  `json:"id"`
+	Name                string `json:"name"`
+	DemoId              int64  `json:"demo_id"`
+	DefaultHighBidTeam  string `json:"default_high_bid_team"`
+	DefaultHighBidFloor int    `json:"default_high_bid_floor"`
 }
 
 func (s *Service) GetChannel(r *GetChannelRequest) (*GetChannelResponse, error) {
@@ -34,8 +36,10 @@ func (s *Service) GetChannel(r *GetChannelRequest) (*GetChannelResponse, error) 
 	}
 
 	response := &GetChannelResponse{
-		Id:   cached.Id,
-		Name: cached.Name,
+		Id:                  cached.Id,
+		Name:                cached.Name,
+		DefaultHighBidFloor: cached.DefaultHighBidFloor,
+		DefaultHighBidTeam:  cached.DefaultHighBidTeam,
 	}
 
 	if cached.DemoId.Valid {
