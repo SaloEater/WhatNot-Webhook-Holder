@@ -20,6 +20,7 @@ type GetChannelResponse struct {
 }
 
 func (s *Service) GetChannel(r *GetChannelRequest) (*GetChannelResponse, error) {
+	s.CacheClear()
 	key := cache.IdToKey(r.Id)
 
 	if !s.ChannelCache.Has(key) {
