@@ -41,8 +41,8 @@ func (r *TGChatRepository) Update(chat *entity.TGChat) error {
 	return err
 }
 
-func (r *TGChatRepository) GetAll() ([]*entity.TGChat, error) {
+func (r *TGChatRepository) GetAllActive() ([]*entity.TGChat, error) {
 	chats := []*entity.TGChat{}
-	err := r.DB.Select(&chats, `SELECT * FROM tg_chat`)
+	err := r.DB.Select(&chats, `SELECT * FROM tg_chat WHERE is_disabled = false`)
 	return chats, err
 }

@@ -43,7 +43,8 @@ SELECT TRUE
 func (r *StreamRepository) Update(day *entity.Stream) error {
 	_, err := r.DB.NamedExec(`UPDATE stream SET
 	  	name = :name,
-		created_at = :created_at
+		created_at = :created_at,
+		is_ended = :is_ended
 	WHERE id = :id`, day)
 
 	return err
@@ -103,7 +104,6 @@ func (r *StreamRepository) GetStats(id int64) (*entity.StreamStatistic, error) {
 		return nil, err
 	}
 
-	//select e.customer into stats.big_customers where count > 20
 	err = r.DB.Select(&stats.BigCustomers, `
 		SELECT e.customer
 		FROM stream s
@@ -118,7 +118,6 @@ func (r *StreamRepository) GetStats(id int64) (*entity.StreamStatistic, error) {
 		return nil, err
 	}
 
-	//select e.customer into stats.lucky_goblins where count > 3 and e.is_giveaway = true
 	err = r.DB.Select(&stats.LuckyGoblins, `
 		SELECT e.customer
 		FROM stream s
@@ -130,4 +129,16 @@ func (r *StreamRepository) GetStats(id int64) (*entity.StreamStatistic, error) {
 	`, id)
 
 	return &stats, err
+}
+
+func (r *StreamRepository) GetEnriched(id int64) (*entity.StreamEnriched, error) {
+	enriched := entity.StreamEnriched{}
+	err := r.DB.Get(&enriched, `
+		SELECT s.*, c.name as channel_name
+		FROM stream s
+		INNER JOIN channel c on s.channel_id = c.id
+		WHERE s.id = $1
+	`, id)
+
+	return &enriched, err
 }

@@ -8,6 +8,7 @@ type Stream struct {
 	ChannelId int64     `json:"channel_id" db:"channel_id"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	IsDeleted bool      `json:"is_deleted" db:"is_deleted"`
+	IsEnded   bool      `json:"is_ended" db:"is_ended"`
 }
 
 type StreamStatistic struct {
@@ -18,4 +19,9 @@ type StreamStatistic struct {
 	ChannelName     string   `db:"channel_name"`
 	BigCustomers    []string `db:"big_customers"`
 	LuckyGoblins    []string `db:"lucky_goblins"`
+}
+
+type StreamEnriched struct {
+	Stream
+	ChannelName string `db:"channel_name"`
 }

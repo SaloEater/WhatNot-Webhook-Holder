@@ -11,4 +11,5 @@ type StreamRepository interface {
 	GetUsernames(int64) ([]string, error)
 	GetAllByChannelId(int64) ([]*entity.Stream, error)
 	GetStats(int64) (*entity.StreamStatistic, error)
+	GetEnriched(int64) (*entity.StreamEnriched, error)
 }

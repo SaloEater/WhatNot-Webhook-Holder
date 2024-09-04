@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
 )
 
 type NotificationStreamEndedRequest struct {
@@ -10,7 +10,7 @@ type NotificationStreamEndedRequest struct {
 }
 
 func (s *Service) NotificationStreamEnded(r *NotificationStreamEndedRequest) error {
-	tgchats, err := s.TGChatRepository.GetAll()
+	tgchats, err := s.TGChatRepository.GetAllActive()
 	if err != nil {
 		return err
 	}
@@ -24,10 +24,10 @@ func (s *Service) NotificationStreamEnded(r *NotificationStreamEndedRequest) err
 	}
 
 	statsMessage := fmt.Sprintf(
-		`Stream %s from %s has ended!
-Breaks: %d
-Earned: %d$
-Unique customers: %d`,
+		`Stream <b>%s</b> from <b>%s</b> has ended!
+Breaks: <b>%d</b>
+Earned: <b>%d$</b>
+Unique customers: <b>%d</b>`,
 		streamStats.Name,
 		streamStats.ChannelName,
 		streamStats.BreaksAmount,
@@ -54,12 +54,18 @@ Unique customers: %d`,
 			continue
 		}
 
-		msg := tgbotapi.NewMessage(tgchat.ChatID, statsMessage)
-		_, err := s.TelegramBot.Send(msg)
-		if err != nil {
-			fmt.Println(err)
-		}
+		s.sendTGMessage(tgchat.ChatID, statsMessage)
 	}
+
+	stream, err := s.StreamRepository.Get(r.StreamID)
+	if err != nil {
+		return err
+	}
+
+	stream.IsEnded = true
+	err = s.StreamRepository.Update(stream)
+	key := cache.IdToKey(stream.Id)
+	s.StreamCache.Set(key, stream)
 
 	return nil
 }

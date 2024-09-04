@@ -144,6 +144,7 @@ func main() {
 
 	http.HandleFunc("/api/cache/clear", routeBuilder.WrapRoute(apiO.CacheClear, api.HttpPost, true))
 	http.HandleFunc("/api/notification/stream_ended", routeBuilder.WrapRoute(apiO.NotificationStreamEnded, api.HttpPost, true))
+	http.HandleFunc("/api/notification/stream_packaging_finished", routeBuilder.WrapRoute(apiO.NotificationStreamPackagingFinished, api.HttpPost, true))
 
 	port := os.Getenv("port")
 	portInt, err := strconv.Atoi(port)

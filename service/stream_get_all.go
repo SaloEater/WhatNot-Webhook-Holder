@@ -8,6 +8,7 @@ type GetStreamResponse struct {
 	Id        int64  `json:"id"`
 	Name      string `json:"name"`
 	CreatedAt int64  `json:"created_at"`
+	IsEnded   bool   `json:"is_ended"`
 }
 
 type GetChannelStreamsResponse struct {
@@ -26,6 +27,7 @@ func (s *Service) GetChannelStreams(r *GetChannelStreamsRequest) (*GetChannelStr
 		streamResponse.Id = stream.Id
 		streamResponse.CreatedAt = stream.CreatedAt.UnixMilli()
 		streamResponse.Name = stream.Name
+		streamResponse.IsEnded = stream.IsEnded
 		streamResponses[i] = &streamResponse
 	}
 

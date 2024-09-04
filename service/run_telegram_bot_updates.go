@@ -43,12 +43,12 @@ func (s *Service) botTick(bot *tgbotapi.BotAPI, u tgbotapi.UpdateConfig) {
 
 		if update.Message.NewChatMembers != nil {
 			for _, member := range update.Message.NewChatMembers {
-				s.handleNewChatMember(bot, update, member)
+				s.handleNewChatMember(update, member)
 			}
 		}
 
 		if update.Message.LeftChatMember != nil {
-			s.handleLeftChatMember(bot, update, update.Message.LeftChatMember)
+			s.handleLeftChatMember(update, update.Message.LeftChatMember)
 		}
 	}
 }
