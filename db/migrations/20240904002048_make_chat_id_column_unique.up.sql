@@ -1,0 +1,1 @@
+ALTER TABLE tg_chat ADD CONSTRAINT tg_chat_chat_id_unique UNIQUE (chat_id);

@@ -8,6 +8,7 @@ import (
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/repository/repository_sqlx"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/service"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
@@ -61,7 +62,13 @@ func main() {
 	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://db/migrations",
-		"defaultdb", driver)
+		"defaultdb",
+		driver,
+	)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	err = m.Up()
 	if err != migrate.ErrNoChange && err != nil {
 		fmt.Println(err)
@@ -74,18 +81,29 @@ func main() {
 	streamCache := go_cache.CreateCache[*entity.Stream](10 * time.Hour)
 	channelCache := go_cache.CreateCache[*entity.Channel](10 * time.Hour)
 
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("mob_telegram_token"))
+	if err != nil {
+		log.Panic(err)
+	}
+
 	svc := &service.Service{
 		BreakRepository:   &repository_sqlx.BreakRepository{DB: db},
-		StreamRepository:  &repository_sqlx.DayRepository{DB: db},
+		StreamRepository:  &repository_sqlx.StreamRepository{DB: db},
 		EventRepository:   &repository_sqlx.EventRepository{DB: db},
 		DemoRepository:    &repository_sqlx.DemoRepository{DB: db},
 		ChannelRepository: &repository_sqlx.ChannelRepository{DB: db},
+		TGChatRepository:  &repository_sqlx.TGChatRepository{DB: db},
 		DemoCache:         &demoCache,
 		BreakCache:        &breakCache,
 		StreamCache:       &streamCache,
 		ChannelCache:      &channelCache,
 		DemoByStreamCache: &demoByStreamCache,
+		TelegramBot:       bot,
 	}
+	go func() {
+		fmt.Println("Starting telegram bot updates")
+		svc.RunTelegramBotUpdates(bot)
+	}()
 
 	apiO := api.API{Service: svc}
 
@@ -125,6 +143,7 @@ func main() {
 	http.HandleFunc("/api/event/activate_team", routeBuilder.WrapRoute(apiO.ActivateTeamEvent, api.HttpPost, true))
 
 	http.HandleFunc("/api/cache/clear", routeBuilder.WrapRoute(apiO.CacheClear, api.HttpPost, true))
+	http.HandleFunc("/api/notification/stream_ended", routeBuilder.WrapRoute(apiO.NotificationStreamEnded, api.HttpPost, true))
 
 	port := os.Getenv("port")
 	portInt, err := strconv.Atoi(port)
