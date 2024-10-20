@@ -3,13 +3,31 @@ package service
 import (
 	"fmt"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
+	"github.com/pkg/errors"
 )
 
-type NotificationStreamEndedRequest struct {
+type EventStreamEndedRequest struct {
 	StreamID int64 `json:"stream_id"`
 }
 
-func (s *Service) NotificationStreamEnded(r *NotificationStreamEndedRequest) error {
+func (s *Service) EventStreamEnded(r *EventStreamEndedRequest) error {
+	stream, err := s.StreamRepository.GetEnriched(r.StreamID)
+	if err != nil {
+		return err
+	}
+
+	stream.IsEnded = true
+	err = s.StreamRepository.Update(stream.Stream)
+	key := cache.IdToKey(stream.Id)
+	s.StreamCache.Set(key, stream.Stream)
+
+	go func() {
+		err := s.MoveStreamShipmentToStatus(stream.Id, StreamShipmentStatusAwaitsLabeling)
+		if err != nil {
+			fmt.Println(errors.WithMessage(err, fmt.Sprintf("move %d (%s) stream to awaits labeling", stream.Id, stream.ChannelName)))
+		}
+	}()
+
 	tgchats, err := s.TGChatRepository.GetAllActive()
 	if err != nil {
 		return err
@@ -56,16 +74,6 @@ Unique customers: <b>%d</b>`,
 
 		s.sendTGMessage(tgchat.ChatID, statsMessage)
 	}
-
-	stream, err := s.StreamRepository.Get(r.StreamID)
-	if err != nil {
-		return err
-	}
-
-	stream.IsEnded = true
-	err = s.StreamRepository.Update(stream)
-	key := cache.IdToKey(stream.Id)
-	s.StreamCache.Set(key, stream)
 
 	return nil
 }

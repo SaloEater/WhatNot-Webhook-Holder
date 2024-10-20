@@ -132,7 +132,7 @@ func (r *StreamRepository) GetStats(id int64) (*entity.StreamStatistic, error) {
 }
 
 func (r *StreamRepository) GetEnriched(id int64) (*entity.StreamEnriched, error) {
-	enriched := entity.StreamEnriched{}
+	enriched := entity.StreamEnriched{Stream: &entity.Stream{}}
 	err := r.DB.Get(&enriched, `
 		SELECT s.*, c.name as channel_name
 		FROM stream s

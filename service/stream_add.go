@@ -2,7 +2,9 @@ package service
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -16,13 +18,13 @@ type AddStreamResponse struct {
 }
 
 func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
-	stream := entity.Stream{
+	stream := &entity.Stream{
 		Name:      r.Name,
 		CreatedAt: time.Now().UTC(),
 		IsDeleted: false,
 		ChannelId: r.ChannelId,
 	}
-	id, err := s.StreamRepository.Create(&stream)
+	id, err := s.StreamRepository.Create(stream)
 	if err != nil {
 		return nil, err
 	}
@@ -37,6 +39,17 @@ func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	go func() {
+		channel, err := s.ChannelRepository.Get(r.ChannelId)
+		if err != nil {
+			fmt.Println(errors.WithMessage(err, "get channel by id"))
+		}
+		err = s.CreateStreamShipment(channel, stream)
+		if err != nil {
+			fmt.Println(errors.WithMessage(err, "create stream shipment"))
+		}
+	}()
 
 	return &AddStreamResponse{GetStreamResponse: GetStreamResponse{
 		Id:        stream.Id,

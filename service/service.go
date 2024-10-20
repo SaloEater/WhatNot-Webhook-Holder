@@ -20,4 +20,5 @@ type Service struct {
 	StreamCache       cacheInterface.Cache[*entity.Stream]
 	ChannelCache      cacheInterface.Cache[*entity.Channel]
 	TelegramBot       *tgbotapi.BotAPI
+	StreamShipmenter
 }

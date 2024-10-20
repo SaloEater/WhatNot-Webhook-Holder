@@ -22,6 +22,6 @@ type StreamStatistic struct {
 }
 
 type StreamEnriched struct {
-	Stream
+	*Stream
 	ChannelName string `db:"channel_name"`
 }

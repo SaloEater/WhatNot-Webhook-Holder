@@ -1,5 +1,10 @@
 package service
 
+import (
+	"fmt"
+	"github.com/pkg/errors"
+)
+
 type DeleteStreamRequest struct {
 	Id int64 `json:"id"`
 }
@@ -14,6 +19,13 @@ func (s *Service) DeleteStream(r *DeleteStreamRequest) (*DeleteStreamResponse, e
 	if err == nil {
 		response.Success = true
 	}
+
+	go func() {
+		err = s.DeleteStreamShipment(r.Id)
+		if err != nil {
+			fmt.Println(errors.WithMessage(err, "delete stream shipment"))
+		}
+	}()
 
 	return response, err
 }

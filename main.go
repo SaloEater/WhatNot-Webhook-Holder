@@ -5,6 +5,7 @@ import (
 	"github.com/SaloEater/WhatNot-Webhook-Holder/api"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/api/webhook"
 	go_cache "github.com/SaloEater/WhatNot-Webhook-Holder/cache/go-cache"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/clickup"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/repository/repository_sqlx"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/service"
@@ -99,6 +100,7 @@ func main() {
 		ChannelCache:      &channelCache,
 		DemoByStreamCache: &demoByStreamCache,
 		TelegramBot:       bot,
+		StreamShipmenter:  clickup.Init(os.Getenv("clickup_api_key"), db),
 	}
 	go func() {
 		fmt.Println("Starting telegram bot updates")
@@ -143,8 +145,8 @@ func main() {
 	http.HandleFunc("/api/event/activate_team", routeBuilder.WrapRoute(apiO.ActivateTeamEvent, api.HttpPost, true))
 
 	http.HandleFunc("/api/cache/clear", routeBuilder.WrapRoute(apiO.CacheClear, api.HttpPost, true))
-	http.HandleFunc("/api/notification/stream_ended", routeBuilder.WrapRoute(apiO.NotificationStreamEnded, api.HttpPost, true))
-	http.HandleFunc("/api/notification/stream_packaging_finished", routeBuilder.WrapRoute(apiO.NotificationStreamPackagingFinished, api.HttpPost, true))
+	http.HandleFunc("/api/notification/stream_ended", routeBuilder.WrapRoute(apiO.EventStreamEnded, api.HttpPost, true))
+	http.HandleFunc("/api/notification/stream_packaging_finished", routeBuilder.WrapRoute(apiO.EventStreamPackagingFinished, api.HttpPost, true))
 
 	port := os.Getenv("port")
 	portInt, err := strconv.Atoi(port)
