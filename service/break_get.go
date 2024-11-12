@@ -15,7 +15,7 @@ func (s *Service) GetBreak(r *GetBreakRequest) (*entity.Break, error) {
 	key := cache.IdToKey(r.Id)
 
 	if !s.BreakCache.Has(key) {
-		dayBreak, err := s.BreakRepository.Get(r.Id)
+		dayBreak, err := s.BreakRepositorier.Get(r.Id)
 		if err != nil {
 			return nil, err
 		}

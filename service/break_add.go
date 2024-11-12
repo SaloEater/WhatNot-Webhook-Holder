@@ -30,13 +30,13 @@ func (s *Service) AddBreak(r *AddBreakRequest) (*AddBreakResponse, error) {
 		return nil, err
 	}
 
-	channel, err := s.ChannelRepository.GetByStream(r.DayId)
+	channel, err := s.ChannelRepositorier.GetByStream(r.DayId)
 	if err != nil {
 		return nil, err
 	}
 
 	var id int64
-	id, err = s.BreakRepository.Create(&entity.Break{
+	id, err = s.BreakRepositorier.Create(&entity.Break{
 		DayId:        r.DayId,
 		Name:         r.Name,
 		StartDate:    startDate,

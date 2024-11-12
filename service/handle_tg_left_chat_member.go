@@ -12,7 +12,7 @@ func (s *Service) handleLeftChatMember(update tgbotapi.Update, member *tgbotapi.
 }
 
 func (s *Service) disableNotificationsForChat(update tgbotapi.Update) {
-	tgchat, err := s.TGChatRepository.GetByChatID(update.Message.Chat.ID)
+	tgchat, err := s.TGChatRepositorier.GetByChatID(update.Message.Chat.ID)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -24,7 +24,7 @@ func (s *Service) disableNotificationsForChat(update tgbotapi.Update) {
 	}
 
 	tgchat.IsDisabled = true
-	err = s.TGChatRepository.Update(tgchat)
+	err = s.TGChatRepositorier.Update(tgchat)
 	if err != nil {
 		fmt.Println(err)
 		return

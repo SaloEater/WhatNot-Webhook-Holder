@@ -36,7 +36,7 @@ func (s *Service) UpdateBreak(r *UpdateBreakRequest) (*UpdateBreakResponse, erro
 	}
 
 	response := &UpdateBreakResponse{}
-	oldBreak, err := s.BreakRepository.Get(r.Id)
+	oldBreak, err := s.BreakRepositorier.Get(r.Id)
 	if err != nil {
 		return response, err
 	}
@@ -47,7 +47,7 @@ func (s *Service) UpdateBreak(r *UpdateBreakRequest) (*UpdateBreakResponse, erro
 	oldBreak.HighBidTeam = r.HighBidTeam
 	oldBreak.GiveawayTeam = r.GiveawayTeam
 	oldBreak.HighBidFloor = r.HighBidFloor
-	err = s.BreakRepository.Update(oldBreak)
+	err = s.BreakRepositorier.Update(oldBreak)
 	if err == nil {
 		response.Success = true
 	}

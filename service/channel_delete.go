@@ -9,12 +9,12 @@ type DeleteChannelResponse struct {
 }
 
 func (s *Service) DeleteChannel(r *DeleteChannelRequest) (*DeleteChannelResponse, error) {
-	err := s.ChannelRepository.Delete(r.Id)
+	err := s.ChannelRepositorier.Delete(r.Id)
 	if err != nil {
 		return &DeleteChannelResponse{Success: false}, err
 	}
 
-	streams, err := s.StreamRepository.GetAllByChannelId(r.Id)
+	streams, err := s.StreamRepositorier.GetAllByChannelId(r.Id)
 	if err != nil {
 		return &DeleteChannelResponse{Success: true}, err
 	}

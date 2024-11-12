@@ -11,12 +11,12 @@ type EventStreamPackagingFinished struct {
 }
 
 func (s *Service) EventStreamPackagingFinished(r *EventStreamPackagingFinished) error {
-	tgchats, err := s.TGChatRepository.GetAllActive()
+	tgchats, err := s.TGChatRepositorier.GetAllActive()
 	if err != nil {
 		return err
 	}
 
-	stream, err := s.StreamRepository.GetEnriched(r.StreamID)
+	stream, err := s.StreamRepositorier.GetEnriched(r.StreamID)
 	if err != nil {
 		return err
 	}

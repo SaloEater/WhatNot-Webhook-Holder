@@ -18,7 +18,7 @@ type AddEventResponse struct {
 }
 
 func (s *Service) AddEvent(r *AddEventRequest) (*AddEventResponse, error) {
-	id, err := s.EventRepository.Create(&entity.Event{
+	id, err := s.EventRepositorier.Create(&entity.Event{
 		BreakId:      r.BreakId,
 		Customer:     r.Customer,
 		Price:        r.Price,

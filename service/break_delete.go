@@ -10,7 +10,7 @@ type DeleteBreakResponse struct {
 
 func (s *Service) DeleteBreak(r *DeleteBreakRequest) (*DeleteBreakResponse, error) {
 	response := &DeleteBreakResponse{Success: false}
-	err := s.BreakRepository.Delete(r.Id)
+	err := s.BreakRepositorier.Delete(r.Id)
 	if err == nil {
 		response.Success = true
 	}

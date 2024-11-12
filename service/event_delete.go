@@ -12,7 +12,7 @@ type DeleteEventResponse struct {
 
 func (s *Service) DeleteEvent(r *DeleteEventRequest) (*DeleteEventResponse, error) {
 	response := &DeleteEventResponse{Success: false}
-	err := s.EventRepository.Delete(r.Id)
+	err := s.EventRepositorier.Delete(r.Id)
 	if err == nil {
 		response.Success = true
 	}

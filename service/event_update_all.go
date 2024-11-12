@@ -20,7 +20,7 @@ func (s *Service) UpdateAllEvents(r *UpdateAllEventsRequest) (*UpdateAllEventsRe
 		eventsMap[event.Id] = event
 	}
 
-	events, err := s.EventRepository.GetAll(ids)
+	events, err := s.EventRepositorier.GetAll(ids)
 	if err != nil {
 		return response, err
 	}
@@ -39,7 +39,7 @@ func (s *Service) UpdateAllEvents(r *UpdateAllEventsRequest) (*UpdateAllEventsRe
 		events[i] = event
 	}
 
-	err = s.EventRepository.UpdateAll(events)
+	err = s.EventRepositorier.UpdateAll(events)
 	if err == nil {
 		response.Success = true
 	}

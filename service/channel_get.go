@@ -23,7 +23,7 @@ func (s *Service) GetChannel(r *GetChannelRequest) (*GetChannelResponse, error) 
 	key := cache.IdToKey(r.Id)
 
 	if !s.ChannelCache.Has(key) {
-		channel, err := s.ChannelRepository.Get(r.Id)
+		channel, err := s.ChannelRepositorier.Get(r.Id)
 		if channel == nil {
 			return nil, err
 		}

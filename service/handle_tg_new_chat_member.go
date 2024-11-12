@@ -18,7 +18,7 @@ func (s *Service) setChatForNotifications(update tgbotapi.Update) {
 		ChatName:   update.Message.Chat.Title,
 		IsDisabled: false,
 	}
-	err := s.TGChatRepository.CreateOrReEnable(tgchat)
+	err := s.TGChatRepositorier.CreateOrReEnable(tgchat)
 	if err != nil {
 		s.sendTGMessage(update.Message.Chat.ID, fmt.Sprintf("Error setting chat for notifications: %s", err.Error()))
 		return

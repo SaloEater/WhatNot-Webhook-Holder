@@ -15,7 +15,7 @@ type ActivateTeamEventResponse struct {
 }
 
 func (s *Service) ActivateTeamEvent(r *ActivateTeamEventRequest) (*ActivateTeamEventResponse, error) {
-	event, err := s.EventRepository.GetAvailableByChannelIDAndTeam(r.ChannelID, r.Team)
+	event, err := s.EventRepositorier.GetAvailableByChannelIDAndTeam(r.ChannelID, r.Team)
 	if err != nil {
 		return nil, err
 	}
@@ -31,20 +31,20 @@ func (s *Service) ActivateTeamEvent(r *ActivateTeamEventRequest) (*ActivateTeamE
 	}
 
 	event.Customer = entity.NoCustomer
-	lastIndex, err := s.EventRepository.GetLastIndex(event.BreakId)
+	lastIndex, err := s.EventRepositorier.GetLastIndex(event.BreakId)
 	if err != nil {
 		return nil, err
 	}
 
 	nextIndex := lastIndex + 1
-	err = s.EventRepository.Move(event.Id, nextIndex)
+	err = s.EventRepositorier.Move(event.Id, nextIndex)
 	if err != nil {
 		return nil, err
 	}
 
 	event.Index = nextIndex
 
-	err = s.EventRepository.Update(event)
+	err = s.EventRepositorier.Update(event)
 	if err != nil {
 		return nil, err
 	}

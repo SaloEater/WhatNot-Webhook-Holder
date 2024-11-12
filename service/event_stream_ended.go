@@ -11,13 +11,13 @@ type EventStreamEndedRequest struct {
 }
 
 func (s *Service) EventStreamEnded(r *EventStreamEndedRequest) error {
-	stream, err := s.StreamRepository.GetEnriched(r.StreamID)
+	stream, err := s.StreamRepositorier.GetEnriched(r.StreamID)
 	if err != nil {
 		return err
 	}
 
 	stream.IsEnded = true
-	err = s.StreamRepository.Update(stream.Stream)
+	err = s.StreamRepositorier.Update(stream.Stream)
 	key := cache.IdToKey(stream.Id)
 	s.StreamCache.Set(key, stream.Stream)
 
@@ -28,12 +28,12 @@ func (s *Service) EventStreamEnded(r *EventStreamEndedRequest) error {
 		}
 	}()
 
-	tgchats, err := s.TGChatRepository.GetAllActive()
+	tgchats, err := s.TGChatRepositorier.GetAllActive()
 	if err != nil {
 		return err
 	}
 
-	streamStats, err := s.StreamRepository.GetStats(r.StreamID)
+	streamStats, err := s.StreamRepositorier.GetStats(r.StreamID)
 	if err != nil {
 		return err
 	}

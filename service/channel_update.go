@@ -15,7 +15,7 @@ type UpdateChannelResponse struct {
 
 func (s *Service) UpdateChannel(r *UpdateChannelRequest) (*UpdateChannelResponse, error) {
 	response := &UpdateChannelResponse{}
-	channel, err := s.ChannelRepository.Get(r.Id)
+	channel, err := s.ChannelRepositorier.Get(r.Id)
 	if err != nil {
 		return response, err
 	}
@@ -23,7 +23,7 @@ func (s *Service) UpdateChannel(r *UpdateChannelRequest) (*UpdateChannelResponse
 	channel.Name = r.Name
 	channel.DefaultHighBidTeam = r.DefaultHighBidTeam
 	channel.DefaultHighBidFloor = r.DefaultHighBidFloor
-	err = s.ChannelRepository.Update(channel)
+	err = s.ChannelRepositorier.Update(channel)
 	if err == nil {
 		response.Success = true
 	}

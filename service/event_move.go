@@ -11,7 +11,7 @@ type MoveEventResponse struct {
 
 func (s *Service) MoveEvent(r *MoveEventRequest) (*MoveEventResponse, error) {
 	response := &MoveEventResponse{}
-	err := s.EventRepository.Move(r.Id, r.NewIndex)
+	err := s.EventRepositorier.Move(r.Id, r.NewIndex)
 	if err == nil {
 		response.Success = true
 	}

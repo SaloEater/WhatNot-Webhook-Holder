@@ -11,8 +11,6 @@ import (
 	"github.com/raksul/go-clickup/clickup"
 )
 
-const StreamDateFieldID = "0d14d7e7-d4c0-40a8-8b13-da1a77ca1fab"
-
 type StreamShipment struct {
 	client *clickup.Client
 	repository.StreamShipmentRepository
@@ -38,9 +36,6 @@ func (s *StreamShipment) CreateStreamShipment(channel *entity.Channel, stream *e
 	task, _, err := s.client.Tasks.CreateTask(ctx, fmt.Sprintf("%d", shipmentSpace.ListID), &clickup.TaskRequest{
 		Name:   fmt.Sprintf("%s #%d", stream.Name, stream.Id),
 		Status: getStatus(service.StreamShipmentStatusStreamInProgress),
-		CustomFields: []clickup.CustomFieldInTaskRequest{
-			{ID: StreamDateFieldID, Value: fmt.Sprintf("%d", stream.CreatedAt.UnixMilli())},
-		},
 	})
 	if err != nil {
 		return err

@@ -8,12 +8,19 @@ import (
 )
 
 type Service struct {
-	repository.BreakRepository
-	repository.StreamRepository
-	repository.EventRepository
-	repository.DemoRepository
-	repository.ChannelRepository
-	repository.TGChatRepository
+	repository.BreakRepositorier
+	repository.StreamRepositorier
+	repository.EventRepositorier
+	repository.DemoRepositorier
+	repository.ChannelRepositorier
+	repository.TGChatRepositorier
+	repository.BundleRepositorier
+	repository.BoxTypeRepositorier
+	repository.LocationRepositorier
+	repository.BundleBoxesRepositorier
+	repository.BoxRepositorier
+	repository.TrackingRepositorier
+	repository.BundleLabelRepositorier
 	DemoCache         cacheInterface.Cache[*entity.Demo]
 	DemoByStreamCache cacheInterface.Cache[*entity.Demo]
 	BreakCache        cacheInterface.Cache[*entity.Break]
@@ -21,4 +28,5 @@ type Service struct {
 	ChannelCache      cacheInterface.Cache[*entity.Channel]
 	TelegramBot       *tgbotapi.BotAPI
 	StreamShipmenter
+	DigitalOceaner
 }

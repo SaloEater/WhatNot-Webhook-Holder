@@ -24,14 +24,14 @@ func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
 		IsDeleted: false,
 		ChannelId: r.ChannelId,
 	}
-	id, err := s.StreamRepository.Create(stream)
+	id, err := s.StreamRepositorier.Create(stream)
 	if err != nil {
 		return nil, err
 	}
 
 	stream.Id = id
 
-	_, err = s.DemoRepository.Create(&entity.Demo{
+	_, err = s.DemoRepositorier.Create(&entity.Demo{
 		StreamId:          stream.Id,
 		BreakId:           sql.NullInt64{Valid: false},
 		HighlightUsername: "",
@@ -41,7 +41,7 @@ func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
 	}
 
 	go func() {
-		channel, err := s.ChannelRepository.Get(r.ChannelId)
+		channel, err := s.ChannelRepositorier.Get(r.ChannelId)
 		if err != nil {
 			fmt.Println(errors.WithMessage(err, "get channel by id"))
 		}

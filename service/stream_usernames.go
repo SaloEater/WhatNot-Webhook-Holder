@@ -8,6 +8,6 @@ type GetUsernamesResponse struct {
 }
 
 func (s *Service) GetUsernames(r *GetUsernamesRequest) (*GetUsernamesResponse, error) {
-	usernames, err := s.StreamRepository.GetUsernames(r.Id)
+	usernames, err := s.StreamRepositorier.GetUsernames(r.Id)
 	return &GetUsernamesResponse{Usernames: usernames}, err
 }

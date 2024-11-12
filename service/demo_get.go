@@ -24,7 +24,7 @@ func (s *Service) GetDemo(r *GetDemoRequest) (*GetDemoResponse, error) {
 	var breakId int64
 
 	if !s.DemoCache.Has(key) {
-		demo, err := s.DemoRepository.Get(r.Id)
+		demo, err := s.DemoRepositorier.Get(r.Id)
 		if demo == nil {
 			return nil, err
 		}

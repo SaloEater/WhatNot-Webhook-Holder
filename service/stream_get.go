@@ -15,7 +15,7 @@ func (s *Service) GetStream(r *GetStreamRequest) (*entity.Stream, error) {
 	key := cache.IdToKey(r.Id)
 
 	if !s.StreamCache.Has(key) {
-		stream, err := s.StreamRepository.Get(r.Id)
+		stream, err := s.StreamRepositorier.Get(r.Id)
 		if stream == nil {
 			return nil, err
 		}

@@ -2,7 +2,7 @@ package repository
 
 import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 
-type EventRepository interface {
+type EventRepositorier interface {
 	GetAllByBreak(int64) ([]*entity.Event, error)
 	Get(int64) (*entity.Event, error)
 	Delete(int64) error

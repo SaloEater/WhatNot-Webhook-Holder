@@ -10,7 +10,7 @@ type GetChannelsResponse struct {
 }
 
 func (s *Service) GetChannels() (*GetChannelsResponse, error) {
-	channels, err := s.ChannelRepository.GetAll()
+	channels, err := s.ChannelRepositorier.GetAll()
 	if err != nil {
 		return nil, err
 	}

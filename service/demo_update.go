@@ -17,7 +17,7 @@ type UpdateDemoResponse struct {
 }
 
 func (s *Service) UpdateDemo(r *UpdateDemoRequest) (*UpdateDemoResponse, error) {
-	demo, err := s.DemoRepository.Get(r.Id)
+	demo, err := s.DemoRepositorier.Get(r.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (s *Service) UpdateDemo(r *UpdateDemoRequest) (*UpdateDemoResponse, error) 
 	}
 	demo.HighlightUsername = r.HighlightUsername
 
-	err = s.DemoRepository.Update(demo)
+	err = s.DemoRepositorier.Update(demo)
 
 	if err != nil {
 		return &UpdateDemoResponse{Success: false}, err
@@ -46,13 +46,13 @@ func (s *Service) UpdateDemo(r *UpdateDemoRequest) (*UpdateDemoResponse, error) 
 }
 
 func (s *Service) updateChannelDemo(streamId int64, demoId int64) error {
-	channel, err := s.ChannelRepository.GetByStream(streamId)
+	channel, err := s.ChannelRepositorier.GetByStream(streamId)
 	if err != nil {
 		return err
 	}
 
 	channel.DemoId = sql.NullInt64{Valid: true, Int64: demoId}
-	err = s.ChannelRepository.Update(channel)
+	err = s.ChannelRepositorier.Update(channel)
 	if err != nil {
 		return err
 	}

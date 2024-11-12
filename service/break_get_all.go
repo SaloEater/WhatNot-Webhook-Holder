@@ -9,7 +9,7 @@ type GetStreamBreaksRequest struct {
 }
 
 func (s *Service) GetStreamBreaks(r *GetStreamBreaksRequest) ([]*entity.Break, error) {
-	breaks, err := s.BreakRepository.GetBreaksByStreamId(r.Id)
+	breaks, err := s.BreakRepositorier.GetBreaksByStreamId(r.Id)
 	if err != nil {
 		return nil, err
 	}

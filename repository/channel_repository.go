@@ -2,7 +2,7 @@ package repository
 
 import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 
-type ChannelRepository interface {
+type ChannelRepositorier interface {
 	GetAll() ([]*entity.Channel, error)
 	Get(int64) (*entity.Channel, error)
 	Delete(int64) error

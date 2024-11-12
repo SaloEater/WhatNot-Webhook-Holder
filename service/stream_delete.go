@@ -15,7 +15,7 @@ type DeleteStreamResponse struct {
 
 func (s *Service) DeleteStream(r *DeleteStreamRequest) (*DeleteStreamResponse, error) {
 	response := &DeleteStreamResponse{Success: false}
-	err := s.StreamRepository.Delete(r.Id)
+	err := s.StreamRepositorier.Delete(r.Id)
 	if err == nil {
 		response.Success = true
 	}

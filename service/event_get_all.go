@@ -13,7 +13,7 @@ type GetBreakEventsResponse struct {
 }
 
 func (s *Service) GetBreakEvents(r *GetBreakEventsRequest) (*GetBreakEventsResponse, error) {
-	events, err := s.EventRepository.GetAllByBreak(r.BreakId)
+	events, err := s.EventRepositorier.GetAllByBreak(r.BreakId)
 	if err != nil {
 		return nil, err
 	}

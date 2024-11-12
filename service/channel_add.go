@@ -13,7 +13,7 @@ func (s *Service) AddChannel(r *AddChannelRequest) (*GetChannelsChannel, error) 
 		Name:      r.Name,
 		IsDeleted: false,
 	}
-	id, err := s.ChannelRepository.Create(&stream)
+	id, err := s.ChannelRepositorier.Create(&stream)
 	if err != nil {
 		return nil, err
 	}

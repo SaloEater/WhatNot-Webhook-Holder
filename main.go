@@ -6,6 +6,7 @@ import (
 	"github.com/SaloEater/WhatNot-Webhook-Holder/api/webhook"
 	go_cache "github.com/SaloEater/WhatNot-Webhook-Holder/cache/go-cache"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/clickup"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/digital_ocean"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/repository/repository_sqlx"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/service"
@@ -88,23 +89,31 @@ func main() {
 	}
 
 	svc := &service.Service{
-		BreakRepository:   &repository_sqlx.BreakRepository{DB: db},
-		StreamRepository:  &repository_sqlx.StreamRepository{DB: db},
-		EventRepository:   &repository_sqlx.EventRepository{DB: db},
-		DemoRepository:    &repository_sqlx.DemoRepository{DB: db},
-		ChannelRepository: &repository_sqlx.ChannelRepository{DB: db},
-		TGChatRepository:  &repository_sqlx.TGChatRepository{DB: db},
-		DemoCache:         &demoCache,
-		BreakCache:        &breakCache,
-		StreamCache:       &streamCache,
-		ChannelCache:      &channelCache,
-		DemoByStreamCache: &demoByStreamCache,
-		TelegramBot:       bot,
-		StreamShipmenter:  clickup.Init(os.Getenv("clickup_api_key"), db),
+		BreakRepositorier:       &repository_sqlx.BreakRepository{DB: db},
+		StreamRepositorier:      &repository_sqlx.StreamRepository{DB: db},
+		EventRepositorier:       &repository_sqlx.EventRepository{DB: db},
+		DemoRepositorier:        &repository_sqlx.DemoRepository{DB: db},
+		ChannelRepositorier:     &repository_sqlx.ChannelRepository{DB: db},
+		TGChatRepositorier:      &repository_sqlx.TGChatRepository{DB: db},
+		BoxRepositorier:         &repository_sqlx.BoxRepository{DB: db},
+		BoxTypeRepositorier:     &repository_sqlx.BoxTypeRepository{DB: db},
+		BundleBoxesRepositorier: &repository_sqlx.BundleBoxesRepository{DB: db},
+		BundleLabelRepositorier: &repository_sqlx.BundleLabelRepository{DB: db},
+		BundleRepositorier:      &repository_sqlx.BundleRepository{DB: db},
+		LocationRepositorier:    &repository_sqlx.LocationRepository{DB: db},
+		TrackingRepositorier:    &repository_sqlx.TrackingRepository{DB: db},
+		DemoCache:               &demoCache,
+		BreakCache:              &breakCache,
+		StreamCache:             &streamCache,
+		ChannelCache:            &channelCache,
+		DemoByStreamCache:       &demoByStreamCache,
+		TelegramBot:             bot,
+		StreamShipmenter:        clickup.Init(os.Getenv("clickup_api_key"), db),
+		DigitalOceaner:          digital_ocean.InitDigitalOcean(os.Getenv("spaces_key"), os.Getenv("spaces_secret"), os.Getenv("spaces_endpoint"), os.Getenv("spaces_region"), os.Getenv("spaces_url")),
 	}
 	go func() {
 		fmt.Println("Starting telegram bot updates")
-		svc.RunTelegramBotUpdates(bot)
+		//svc.RunTelegramBotUpdates(bot)
 	}()
 
 	apiO := api.API{Service: svc}
@@ -147,6 +156,28 @@ func main() {
 	http.HandleFunc("/api/cache/clear", routeBuilder.WrapRoute(apiO.CacheClear, api.HttpPost, true))
 	http.HandleFunc("/api/notification/stream_ended", routeBuilder.WrapRoute(apiO.EventStreamEnded, api.HttpPost, true))
 	http.HandleFunc("/api/notification/stream_packaging_finished", routeBuilder.WrapRoute(apiO.EventStreamPackagingFinished, api.HttpPost, true))
+
+	http.HandleFunc("/api/box_type", routeBuilder.WrapRoute(apiO.BoxTypeGet, api.HttpPost, true))
+	http.HandleFunc("/api/box_type/get_list", routeBuilder.WrapRoute(apiO.BoxTypeGetList, api.HttpPost, true))
+	http.HandleFunc("/api/box_type/update", routeBuilder.WrapRoute(apiO.BoxTypeUpdate, api.HttpPost, true))
+	http.HandleFunc("/api/box_type/create", routeBuilder.WrapRoute(apiO.BoxTypeCreate, api.HttpPost, true))
+
+	http.HandleFunc("/api/box/update", routeBuilder.WrapRoute(apiO.BoxUpdate, api.HttpPost, true))
+
+	http.HandleFunc("/api/boxes/create", routeBuilder.WrapRoute(apiO.BoxesCreate, api.HttpPost, true))
+	http.HandleFunc("/api/boxes/delete", routeBuilder.WrapRoute(apiO.BoxesDelete, api.HttpPost, true))
+	http.HandleFunc("/api/boxes/get_by_bundle", routeBuilder.WrapRoute(apiO.BoxesGetByBundle, api.HttpPost, true))
+	http.HandleFunc("/api/boxes/update", routeBuilder.WrapRoute(apiO.BoxesUpdate, api.HttpPost, true))
+
+	http.HandleFunc("/api/bundle/create", routeBuilder.WrapRoute(apiO.BundleCreate, api.HttpPost, true))
+	http.HandleFunc("/api/bundle/delete", routeBuilder.WrapRoute(apiO.BundleDelete, api.HttpPost, true))
+	http.HandleFunc("/api/bundle", routeBuilder.WrapRoute(apiO.BundleGet, api.HttpPost, true))
+	http.HandleFunc("/api/bundle/get_list", routeBuilder.WrapRoute(apiO.BundleGetList, api.HttpPost, true))
+	http.HandleFunc("/api/bundle/to_next_status", routeBuilder.WrapRoute(apiO.BundleToNextStatus, api.HttpPost, true))
+	http.HandleFunc("/api/bundle/to_previous_status", routeBuilder.WrapRoute(apiO.BundleToPreviousStatus, api.HttpPost, true))
+	http.HandleFunc("/api/bundle/update", routeBuilder.WrapRoute(apiO.BundleUpdate, api.HttpPost, true))
+
+	http.HandleFunc("/api/location/get_list", routeBuilder.WrapRoute(apiO.LocationGetList, api.HttpPost, true))
 
 	port := os.Getenv("port")
 	portInt, err := strconv.Atoi(port)

@@ -9,5 +9,5 @@ type GetChannelByStreamRequest struct {
 }
 
 func (s *Service) GetChannelByStream(r *GetChannelByStreamRequest) (*entity.Channel, error) {
-	return s.ChannelRepository.GetByStream(r.StreamId)
+	return s.ChannelRepositorier.GetByStream(r.StreamId)
 }

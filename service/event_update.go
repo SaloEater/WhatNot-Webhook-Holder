@@ -20,7 +20,7 @@ type UpdateEventResponse struct {
 
 func (s *Service) UpdateEvent(r *UpdateEventRequest) (*UpdateEventResponse, error) {
 	response := &UpdateEventResponse{}
-	event, err := s.EventRepository.Get(r.Id)
+	event, err := s.EventRepositorier.Get(r.Id)
 	if err != nil {
 		return response, err
 	}
@@ -32,7 +32,7 @@ func (s *Service) UpdateEvent(r *UpdateEventRequest) (*UpdateEventResponse, erro
 	event.Note = r.Note
 	event.Quantity = r.Quantity
 	event.GiveawayType = entity.GiveawayType(r.GiveawayType)
-	err = s.EventRepository.Update(event)
+	err = s.EventRepositorier.Update(event)
 	if err == nil {
 		response.Success = true
 	}

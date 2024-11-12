@@ -16,7 +16,7 @@ type GetChannelStreamsResponse struct {
 }
 
 func (s *Service) GetChannelStreams(r *GetChannelStreamsRequest) (*GetChannelStreamsResponse, error) {
-	streams, err := s.StreamRepository.GetAllByChannelId(r.ChannelId)
+	streams, err := s.StreamRepositorier.GetAllByChannelId(r.ChannelId)
 	if err != nil {
 		return nil, err
 	}

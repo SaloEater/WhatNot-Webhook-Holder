@@ -2,7 +2,7 @@ package repository
 
 import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 
-type StreamRepository interface {
+type StreamRepositorier interface {
 	GetAll() ([]*entity.Stream, error)
 	Get(int64) (*entity.Stream, error)
 	Delete(int64) error

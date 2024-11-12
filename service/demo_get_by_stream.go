@@ -17,7 +17,7 @@ func (s *Service) GetDemoByStream(r *GetDemoByStreamRequest) (*GetDemoResponse, 
 	var breakId int64
 
 	if !s.DemoByStreamCache.Has(key) {
-		demo, err := s.DemoRepository.GetByStream(r.StreamId)
+		demo, err := s.DemoRepositorier.GetByStream(r.StreamId)
 		if demo == nil {
 			return nil, err
 		}
