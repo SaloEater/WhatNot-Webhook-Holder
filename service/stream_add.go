@@ -1,7 +1,6 @@
 package service
 
 import (
-	"database/sql"
 	"fmt"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/pkg/errors"
@@ -30,15 +29,6 @@ func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
 	}
 
 	stream.Id = id
-
-	_, err = s.DemoRepositorier.Create(&entity.Demo{
-		StreamId:          stream.Id,
-		BreakId:           sql.NullInt64{Valid: false},
-		HighlightUsername: "",
-	})
-	if err != nil {
-		return nil, err
-	}
 
 	go func() {
 		channel, err := s.ChannelRepositorier.Get(r.ChannelId)

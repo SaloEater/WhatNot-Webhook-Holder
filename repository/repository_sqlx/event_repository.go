@@ -190,11 +190,11 @@ WHERE break_id = oldRecord.breakId;
 func (r *EventRepository) GetAvailableByChannelIDAndTeam(channelID int64, team string) (*entity.Event, error) {
 	var event entity.Event
 	err := r.DB.Get(&event, `
-		WITH selectedChannel AS (
-			SELECT demo_id FROM channel WHERE id = $1
-		), selectedDemo AS (
-				SELECT break_id FROM demo INNER JOIN selectedChannel as s on s.demo_id = demo.id
-		) SELECT * FROM event INNER JOIN selectedDemo d on event.break_id = d.break_id WHERE team = $2 AND is_deleted = false LIMIT 1
+		WITH selectedStream AS (
+			SELECT active_stream_id FROM channel WHERE id = $1
+		), selectedBreak AS (
+			SELECT active_break_id FROM stream INNER JOIN selectedStream s ON s.active_stream_id = stream.id
+		) SELECT * FROM event INNER JOIN selectedBreak b ON event.break_id = b.active_break_id WHERE team = $2 AND is_deleted = false LIMIT 1
 	`, channelID, team)
 	return &event, err
 }

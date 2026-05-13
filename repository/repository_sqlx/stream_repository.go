@@ -44,7 +44,8 @@ func (r *StreamRepository) Update(day *entity.Stream) error {
 	_, err := r.DB.NamedExec(`UPDATE stream SET
 	  	name = :name,
 		created_at = :created_at,
-		is_ended = :is_ended
+		is_ended = :is_ended,
+		active_break_id = :active_break_id
 	WHERE id = :id`, day)
 
 	return err

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
-	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 )
 
 type GetChannelRequest struct {
@@ -14,7 +13,7 @@ type GetChannelRequest struct {
 type GetChannelResponse struct {
 	Id                  int64  `json:"id"`
 	Name                string `json:"name"`
-	DemoId              int64  `json:"demo_id"`
+	ActiveStreamId      *int64 `json:"active_stream_id"`
 	DefaultHighBidTeam  string `json:"default_high_bid_team"`
 	DefaultHighBidFloor int    `json:"default_high_bid_floor"`
 }
@@ -35,18 +34,11 @@ func (s *Service) GetChannel(r *GetChannelRequest) (*GetChannelResponse, error) 
 		return nil, errors.New(fmt.Sprintf("channel for id %d not found", r.Id))
 	}
 
-	response := &GetChannelResponse{
+	return &GetChannelResponse{
 		Id:                  cached.Id,
 		Name:                cached.Name,
+		ActiveStreamId:      cached.ActiveStreamId,
 		DefaultHighBidFloor: cached.DefaultHighBidFloor,
 		DefaultHighBidTeam:  cached.DefaultHighBidTeam,
-	}
-
-	if cached.DemoId.Valid {
-		response.DemoId = cached.DemoId.Int64
-	} else {
-		response.DemoId = entity.NoId
-	}
-
-	return response, nil
+	}, nil
 }

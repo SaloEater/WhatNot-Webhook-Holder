@@ -1,0 +1,2 @@
+ALTER TABLE channel DROP CONSTRAINT fk_demo;
+ALTER TABLE channel DROP COLUMN demo_id;

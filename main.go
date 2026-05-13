@@ -77,8 +77,6 @@ func main() {
 		return
 	}
 
-	demoCache := go_cache.CreateCache[*entity.Demo](10 * time.Hour)
-	demoByStreamCache := go_cache.CreateCache[*entity.Demo](10 * time.Hour)
 	breakCache := go_cache.CreateCache[*entity.Break](10 * time.Hour)
 	streamCache := go_cache.CreateCache[*entity.Stream](10 * time.Hour)
 	channelCache := go_cache.CreateCache[*entity.Channel](10 * time.Hour)
@@ -92,7 +90,6 @@ func main() {
 		BreakRepositorier:       &repository_sqlx.BreakRepository{DB: db},
 		StreamRepositorier:      &repository_sqlx.StreamRepository{DB: db},
 		EventRepositorier:       &repository_sqlx.EventRepository{DB: db},
-		DemoRepositorier:        &repository_sqlx.DemoRepository{DB: db},
 		ChannelRepositorier:     &repository_sqlx.ChannelRepository{DB: db},
 		TGChatRepositorier:      &repository_sqlx.TGChatRepository{DB: db},
 		BoxRepositorier:         &repository_sqlx.BoxRepository{DB: db},
@@ -102,11 +99,9 @@ func main() {
 		BundleRepositorier:      &repository_sqlx.BundleRepository{DB: db},
 		LocationRepositorier:    &repository_sqlx.LocationRepository{DB: db},
 		TrackingRepositorier:    &repository_sqlx.TrackingRepository{DB: db},
-		DemoCache:               &demoCache,
 		BreakCache:              &breakCache,
 		StreamCache:             &streamCache,
 		ChannelCache:            &channelCache,
-		DemoByStreamCache:       &demoByStreamCache,
 		TelegramBot:             bot,
 		StreamShipmenter:        clickup.Init(os.Getenv("clickup_api_key"), db),
 		DigitalOceaner:          digital_ocean.InitDigitalOcean(os.Getenv("spaces_key"), os.Getenv("spaces_secret"), os.Getenv("spaces_endpoint"), os.Getenv("spaces_region"), os.Getenv("spaces_url")),
@@ -135,9 +130,8 @@ func main() {
 	http.HandleFunc("/api/stream/usernames", routeBuilder.WrapRoute(apiO.GetUsernames, api.HttpPost, true))
 	http.HandleFunc("/api/stream/delete", routeBuilder.WrapRoute(apiO.DeleteStream, api.HttpPost, true))
 
-	http.HandleFunc("/api/stream/demo", routeBuilder.WrapRoute(apiO.GetDemoByStream, api.HttpPost, true))
-	http.HandleFunc("/api/demo", routeBuilder.WrapRoute(apiO.GetDemo, api.HttpPost, true))
-	http.HandleFunc("/api/demo/update", routeBuilder.WrapRoute(apiO.UpdateDemo, api.HttpPost, true))
+	http.HandleFunc("/api/channel/set_active_stream", routeBuilder.WrapRoute(apiO.SetActiveStream, api.HttpPost, true))
+	http.HandleFunc("/api/stream/set_active_break", routeBuilder.WrapRoute(apiO.SetActiveBreak, api.HttpPost, true))
 
 	http.HandleFunc("/api/stream/breaks", routeBuilder.WrapRoute(apiO.GetStreamBreaks, api.HttpPost, true))
 	http.HandleFunc("/api/break", routeBuilder.WrapRoute(apiO.GetBreak, api.HttpPost, true))
