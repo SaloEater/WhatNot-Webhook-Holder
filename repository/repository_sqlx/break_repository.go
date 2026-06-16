@@ -74,3 +74,8 @@ func (r *BreakRepository) GetBreaksByStreamId(dayId int64) ([]*entity.Break, err
 	err := r.DB.Select(&breaks, `SELECT * FROM break WHERE day_id = $1 AND is_deleted = false`, dayId)
 	return breaks, err
 }
+
+func (r *BreakRepository) SetSeries(breakID int64, seriesID *int64) error {
+	_, err := r.DB.Exec(`UPDATE break SET series_id = $1 WHERE id = $2`, seriesID, breakID)
+	return err
+}

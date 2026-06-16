@@ -1,3 +1,5 @@
 .idea
 .claude
 *.iml
+.env.local
+main

@@ -30,6 +30,24 @@ func InitDigitalOcean(key, secret, endpoint, region, spacesURL string) *DigitalO
 	return &DigitalOcean{s3Client, spacesURL}
 }
 
+func (d *DigitalOcean) SaveCardPhoto(data []byte, seriesID int64, filename string) (string, error) {
+	filePath := fmt.Sprintf("cards/%d/%s", seriesID, filename)
+	object := s3.PutObjectInput{
+		Bucket: aws.String("mount-olympus-storage"),
+		Key:    aws.String(filePath),
+		Body:   bytes.NewReader(data),
+		ACL:    aws.String("public-read"),
+		Metadata: map[string]*string{
+			"x-amz-meta-success": aws.String("ok"),
+		},
+	}
+	_, err := d.s3Client.PutObject(&object)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s/%s", d.spacesURL, filePath), nil
+}
+
 func (d *DigitalOcean) SaveLabel(buffer bytes.Buffer, name string) (string, error) {
 	reader := bytes.NewReader(buffer.Bytes())
 	filePath := fmt.Sprintf("labels/%s", name)

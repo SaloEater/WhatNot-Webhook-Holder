@@ -20,6 +20,9 @@ type Service struct {
 	repository.BoxRepositorier
 	repository.TrackingRepositorier
 	repository.BundleLabelRepositorier
+	repository.SeriesRepositorier
+	repository.PhotoRepositorier
+	repository.SeriesTeamPriceRepositorier
 	BreakCache   cacheInterface.Cache[*entity.Break]
 	StreamCache  cacheInterface.Cache[*entity.Stream]
 	ChannelCache cacheInterface.Cache[*entity.Channel]

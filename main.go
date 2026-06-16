@@ -87,24 +87,27 @@ func main() {
 	}
 
 	svc := &service.Service{
-		BreakRepositorier:       &repository_sqlx.BreakRepository{DB: db},
-		StreamRepositorier:      &repository_sqlx.StreamRepository{DB: db},
-		EventRepositorier:       &repository_sqlx.EventRepository{DB: db},
-		ChannelRepositorier:     &repository_sqlx.ChannelRepository{DB: db},
-		TGChatRepositorier:      &repository_sqlx.TGChatRepository{DB: db},
-		BoxRepositorier:         &repository_sqlx.BoxRepository{DB: db},
-		BoxTypeRepositorier:     &repository_sqlx.BoxTypeRepository{DB: db},
-		BundleBoxesRepositorier: &repository_sqlx.BundleBoxesRepository{DB: db},
-		BundleLabelRepositorier: &repository_sqlx.BundleLabelRepository{DB: db},
-		BundleRepositorier:      &repository_sqlx.BundleRepository{DB: db},
-		LocationRepositorier:    &repository_sqlx.LocationRepository{DB: db},
-		TrackingRepositorier:    &repository_sqlx.TrackingRepository{DB: db},
-		BreakCache:              &breakCache,
-		StreamCache:             &streamCache,
-		ChannelCache:            &channelCache,
-		TelegramBot:             bot,
-		StreamShipmenter:        clickup.Init(os.Getenv("clickup_api_key"), db),
-		DigitalOceaner:          digital_ocean.InitDigitalOcean(os.Getenv("spaces_key"), os.Getenv("spaces_secret"), os.Getenv("spaces_endpoint"), os.Getenv("spaces_region"), os.Getenv("spaces_url")),
+		BreakRepositorier:           &repository_sqlx.BreakRepository{DB: db},
+		StreamRepositorier:          &repository_sqlx.StreamRepository{DB: db},
+		EventRepositorier:           &repository_sqlx.EventRepository{DB: db},
+		ChannelRepositorier:         &repository_sqlx.ChannelRepository{DB: db},
+		TGChatRepositorier:          &repository_sqlx.TGChatRepository{DB: db},
+		BoxRepositorier:             &repository_sqlx.BoxRepository{DB: db},
+		BoxTypeRepositorier:         &repository_sqlx.BoxTypeRepository{DB: db},
+		BundleBoxesRepositorier:     &repository_sqlx.BundleBoxesRepository{DB: db},
+		BundleLabelRepositorier:     &repository_sqlx.BundleLabelRepository{DB: db},
+		BundleRepositorier:          &repository_sqlx.BundleRepository{DB: db},
+		SeriesRepositorier:          &repository_sqlx.SeriesRepository{DB: db},
+		PhotoRepositorier:           &repository_sqlx.PhotoRepository{DB: db},
+		SeriesTeamPriceRepositorier: &repository_sqlx.SeriesTeamPriceRepository{DB: db},
+		LocationRepositorier:        &repository_sqlx.LocationRepository{DB: db},
+		TrackingRepositorier:        &repository_sqlx.TrackingRepository{DB: db},
+		BreakCache:                  &breakCache,
+		StreamCache:                 &streamCache,
+		ChannelCache:                &channelCache,
+		TelegramBot:                 bot,
+		StreamShipmenter:            clickup.Init(os.Getenv("clickup_api_key"), db),
+		DigitalOceaner:              digital_ocean.InitDigitalOcean(os.Getenv("spaces_key"), os.Getenv("spaces_secret"), os.Getenv("spaces_endpoint"), os.Getenv("spaces_region"), os.Getenv("spaces_url")),
 	}
 	go func() {
 		fmt.Println("Starting telegram bot updates")
@@ -172,6 +175,26 @@ func main() {
 	http.HandleFunc("/api/bundle/update", routeBuilder.WrapRoute(apiO.BundleUpdate, api.HttpPost, true))
 
 	http.HandleFunc("/api/location/get_list", routeBuilder.WrapRoute(apiO.LocationGetList, api.HttpPost, true))
+
+	http.HandleFunc("/api/series/create", routeBuilder.WrapRoute(apiO.SeriesCreate, api.HttpPost, true))
+	http.HandleFunc("/api/series/get", routeBuilder.WrapRoute(apiO.SeriesGet, api.HttpPost, true))
+	http.HandleFunc("/api/series/list", routeBuilder.WrapRoute(apiO.SeriesGetList, api.HttpGet, true))
+	http.HandleFunc("/api/series/update", routeBuilder.WrapRoute(apiO.SeriesUpdate, api.HttpPost, true))
+	http.HandleFunc("/api/series/close", routeBuilder.WrapRoute(apiO.SeriesClose, api.HttpPost, true))
+	http.HandleFunc("/api/series/delete", routeBuilder.WrapRoute(apiO.SeriesDelete, api.HttpPost, true))
+
+	http.HandleFunc("/api/photo/upload", routeBuilder.WrapRoute(apiO.PhotoUpload, api.HttpPost, true))
+	http.HandleFunc("/api/photo/list", routeBuilder.WrapRoute(apiO.PhotoGetBySeries, api.HttpPost, true))
+	http.HandleFunc("/api/photo/delete", routeBuilder.WrapRoute(apiO.PhotoDelete, api.HttpPost, true))
+	http.HandleFunc("/api/photo/update", routeBuilder.WrapRoute(apiO.PhotoUpdate, api.HttpPost, true))
+	http.HandleFunc("/api/photo/mark_sold", routeBuilder.WrapRoute(apiO.PhotoMarkSold, api.HttpPost, true))
+	http.HandleFunc("/api/photo/board", routeBuilder.WrapRoute(apiO.PhotoGetForBoard, api.HttpPost, true))
+
+	http.HandleFunc("/api/break/set_series", routeBuilder.WrapRoute(apiO.BreakSetSeries, api.HttpPost, true))
+
+	http.HandleFunc("/api/series/team_prices", routeBuilder.WrapRoute(apiO.SeriesTeamPriceGet, api.HttpPost, true))
+	http.HandleFunc("/api/series/team_price/set", routeBuilder.WrapRoute(apiO.SeriesTeamPriceSet, api.HttpPost, true))
+	http.HandleFunc("/api/series/team_price/last_prices", routeBuilder.WrapRoute(apiO.SeriesTeamPriceGetLastPrices, api.HttpGet, true))
 
 	port := os.Getenv("port")
 	portInt, err := strconv.Atoi(port)

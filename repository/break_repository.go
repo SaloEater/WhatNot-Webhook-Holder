@@ -10,4 +10,5 @@ type BreakRepositorier interface {
 	Delete(int64) error
 	Update(p *entity.Break) error
 	GetBreaksByStreamId(int64) ([]*entity.Break, error)
+	SetSeries(breakID int64, seriesID *int64) error
 }

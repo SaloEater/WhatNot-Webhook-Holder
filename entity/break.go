@@ -14,4 +14,5 @@ type Break struct {
 	StartDate time.Time `json:"start_date" db:"start_date"`
 	EndDate   time.Time `json:"end_date" db:"end_date"`
 	IsDeleted bool      `json:"is_deleted" db:"is_deleted"`
+	SeriesId  *int64    `json:"series_id"  db:"series_id"`
 }
