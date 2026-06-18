@@ -11,4 +11,5 @@ type Photo struct {
 	IsSold    bool      `json:"is_sold"    db:"is_sold"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	IsDeleted bool      `json:"is_deleted" db:"is_deleted"`
+	Price     int64     `json:"price"      db:"price"`
 }

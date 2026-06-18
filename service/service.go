@@ -22,11 +22,11 @@ type Service struct {
 	repository.BundleLabelRepositorier
 	repository.SeriesRepositorier
 	repository.PhotoRepositorier
-	repository.SeriesTeamPriceRepositorier
-	BreakCache   cacheInterface.Cache[*entity.Break]
-	StreamCache  cacheInterface.Cache[*entity.Stream]
-	ChannelCache cacheInterface.Cache[*entity.Channel]
-	TelegramBot  *tgbotapi.BotAPI
+	BreakCache        cacheInterface.Cache[*entity.Break]
+	StreamCache       cacheInterface.Cache[*entity.Stream]
+	ChannelCache      cacheInterface.Cache[*entity.Channel]
+	SeriesPricesCache cacheInterface.Cache[[]*entity.SeriesTeamTotal]
+	TelegramBot       *tgbotapi.BotAPI
 	StreamShipmenter
 	DigitalOceaner
 }
