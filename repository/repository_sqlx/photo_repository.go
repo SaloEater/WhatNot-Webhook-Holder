@@ -37,7 +37,7 @@ func (r *PhotoRepository) Create(p *entity.Photo) (int64, error) {
 
 func (r *PhotoRepository) GetBySeriesId(seriesId int64) ([]*entity.Photo, error) {
 	photos := []*entity.Photo{}
-	err := r.DB.Select(&photos, `SELECT * FROM photo WHERE series_id = $1 AND is_deleted = false`, seriesId)
+	err := r.DB.Select(&photos, `SELECT * FROM photo WHERE series_id = $1`, seriesId)
 	return photos, err
 }
 
@@ -72,5 +72,10 @@ func (r *PhotoRepository) MarkSold(id int64, sold bool) error {
 
 func (r *PhotoRepository) Delete(id int64) error {
 	_, err := r.DB.Exec(`UPDATE photo SET is_deleted = true WHERE id = $1`, id)
+	return err
+}
+
+func (r *PhotoRepository) Restore(id int64) error {
+	_, err := r.DB.Exec(`UPDATE photo SET is_deleted = false WHERE id = $1`, id)
 	return err
 }

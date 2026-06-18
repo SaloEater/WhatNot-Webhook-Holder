@@ -19,6 +19,7 @@ func (s *Service) PhotoUpload(seriesID int64, data []byte, name, team, filename 
 		Url:      url,
 	})
 	if err != nil {
+		//TODO: remove photo from DO
 		return nil, err
 	}
 	return &PhotoUploadResponse{Id: id}, nil

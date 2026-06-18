@@ -188,6 +188,7 @@ func main() {
 	http.HandleFunc("/api/photo/delete", routeBuilder.WrapRoute(apiO.PhotoDelete, api.HttpPost, true))
 	http.HandleFunc("/api/photo/update", routeBuilder.WrapRoute(apiO.PhotoUpdate, api.HttpPost, true))
 	http.HandleFunc("/api/photo/mark_sold", routeBuilder.WrapRoute(apiO.PhotoMarkSold, api.HttpPost, true))
+	http.HandleFunc("/api/photo/restore", routeBuilder.WrapRoute(apiO.PhotoRestore, api.HttpPost, true))
 	http.HandleFunc("/api/photo/board", routeBuilder.WrapRoute(apiO.PhotoGetForBoard, api.HttpPost, true))
 
 	http.HandleFunc("/api/break/set_series", routeBuilder.WrapRoute(apiO.BreakSetSeries, api.HttpPost, true))

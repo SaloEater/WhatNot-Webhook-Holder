@@ -1,0 +1,1 @@
+ALTER TABLE stream ADD COLUMN highlight_username VARCHAR(255) NOT NULL DEFAULT '';

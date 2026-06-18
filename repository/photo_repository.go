@@ -9,4 +9,5 @@ type PhotoRepositorier interface {
 	Update(id int64, name, team string) error
 	MarkSold(id int64, sold bool) error
 	Delete(id int64) error
+	Restore(id int64) error
 }

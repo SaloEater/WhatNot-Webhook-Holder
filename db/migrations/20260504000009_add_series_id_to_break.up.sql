@@ -1,0 +1,1 @@
+ALTER TABLE break ADD COLUMN series_id BIGINT REFERENCES series(id);
