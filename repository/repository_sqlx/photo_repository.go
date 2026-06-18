@@ -2,6 +2,7 @@ package repository_sqlx
 
 import (
 	"fmt"
+
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/jmoiron/sqlx"
 )
@@ -51,7 +52,7 @@ JOIN break b ON b.series_id = s.id
 JOIN stream st ON st.id = b.day_id
 JOIN channel c ON c.active_stream_id = st.id
 WHERE c.id = $1
-  AND s.status = 'closed'
+--   AND s.status = 'closed'
   AND p.is_sold = false
   AND p.is_deleted = false
   AND s.is_deleted = false
