@@ -10,9 +10,12 @@ type SeriesRepository struct {
 	DB *sqlx.DB
 }
 
-func (r *SeriesRepository) Create(name string, totalCards int64) (int64, error) {
+func (r *SeriesRepository) Create(name string, totalCards int64, defaultPrice string) (int64, error) {
 	var id int64
-	err := r.DB.QueryRow(`INSERT INTO series (name, total_cards) VALUES ($1, $2) RETURNING id`, name, totalCards).Scan(&id)
+	err := r.DB.QueryRow(
+		`INSERT INTO series (name, total_cards, default_price) VALUES ($1, $2, $3) RETURNING id`,
+		name, totalCards, defaultPrice,
+	).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -31,8 +34,11 @@ func (r *SeriesRepository) GetList() ([]*entity.Series, error) {
 	return series, err
 }
 
-func (r *SeriesRepository) Update(id int64, name string) error {
-	_, err := r.DB.Exec(`UPDATE series SET name = $1 WHERE id = $2`, name, id)
+func (r *SeriesRepository) Update(id int64, name string, usedCards int64, defaultPrice string) error {
+	_, err := r.DB.Exec(
+		`UPDATE series SET name = $1, used_cards = $2, default_price = $3 WHERE id = $4`,
+		name, usedCards, defaultPrice, id,
+	)
 	return err
 }
 

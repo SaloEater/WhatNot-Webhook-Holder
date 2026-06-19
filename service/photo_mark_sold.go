@@ -18,6 +18,7 @@ func (s *Service) PhotoMarkSold(r *PhotoMarkSoldRequest) (*PhotoMarkSoldResponse
 	if err == nil {
 		response.Success = true
 		s.SeriesPricesCache.Delete(cache.IdToKey(r.SeriesId))
+		s.SeriesWithCountCache.Delete(cache.IdToKey(r.SeriesId))
 	}
 	return response, err
 }

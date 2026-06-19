@@ -1,0 +1,1 @@
+ALTER TABLE series ADD COLUMN default_price VARCHAR NOT NULL DEFAULT '';

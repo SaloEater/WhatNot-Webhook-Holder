@@ -11,4 +11,6 @@ type PhotoRepositorier interface {
 	Delete(id int64) error
 	Restore(id int64) error
 	GetPricesBySeriesId(seriesId int64) ([]*entity.SeriesTeamTotal, error)
+	CountUnsoldBySeriesId(seriesId int64) (int64, error)
+	CountSoldBySeriesId(seriesId int64) (int64, error)
 }

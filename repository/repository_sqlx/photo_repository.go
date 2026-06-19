@@ -94,3 +94,27 @@ func (r *PhotoRepository) GetPricesBySeriesId(seriesId int64) ([]*entity.SeriesT
 	`, seriesId)
 	return totals, err
 }
+
+func (r *PhotoRepository) CountUnsoldBySeriesId(seriesId int64) (int64, error) {
+	var count int64
+	err := r.DB.QueryRow(`
+		SELECT COUNT(*)
+		FROM photo
+		WHERE series_id = $1
+		  AND is_sold = false
+		  AND is_deleted = false
+	`, seriesId).Scan(&count)
+	return count, err
+}
+
+func (r *PhotoRepository) CountSoldBySeriesId(seriesId int64) (int64, error) {
+	var count int64
+	err := r.DB.QueryRow(`
+		SELECT COUNT(*)
+		FROM photo
+		WHERE series_id = $1
+		  AND is_sold = true
+		  AND is_deleted = false
+	`, seriesId).Scan(&count)
+	return count, err
+}
