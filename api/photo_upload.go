@@ -35,6 +35,7 @@ func (a *API) PhotoUpload(w http.ResponseWriter, r *http.Request) (any, error) {
 
 	name := r.FormValue("name")
 	team := r.FormValue("team")
+	price, _ := strconv.ParseInt(r.FormValue("price"), 10, 64)
 
-	return a.Service.PhotoUpload(seriesID, data, name, team, header.Filename)
+	return a.Service.PhotoUpload(seriesID, data, name, team, price, header.Filename)
 }

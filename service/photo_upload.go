@@ -6,7 +6,7 @@ type PhotoUploadResponse struct {
 	Id int64 `json:"id"`
 }
 
-func (s *Service) PhotoUpload(seriesID int64, data []byte, name, team, filename string) (*PhotoUploadResponse, error) {
+func (s *Service) PhotoUpload(seriesID int64, data []byte, name, team string, price int64, filename string) (*PhotoUploadResponse, error) {
 	url, err := s.DigitalOceaner.SaveCardPhoto(data, seriesID, filename)
 	if err != nil {
 		return nil, err
@@ -16,6 +16,7 @@ func (s *Service) PhotoUpload(seriesID int64, data []byte, name, team, filename 
 		SeriesId: seriesID,
 		Name:     name,
 		Team:     team,
+		Price:    price,
 		Url:      url,
 	})
 	if err != nil {
