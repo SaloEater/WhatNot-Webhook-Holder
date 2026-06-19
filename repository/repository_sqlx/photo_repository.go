@@ -82,12 +82,14 @@ func (r *PhotoRepository) Restore(id int64) error {
 func (r *PhotoRepository) GetPricesBySeriesId(seriesId int64) ([]*entity.SeriesTeamTotal, error) {
 	totals := []*entity.SeriesTeamTotal{}
 	err := r.DB.Select(&totals, `
-		SELECT team, SUM(price) AS price
+		SELECT team,
+		       SUM(price) FILTER (WHERE is_sold = false) AS price_left,
+		       SUM(price) AS total_price
 		FROM photo
 		WHERE series_id = $1
-		  AND is_sold = false
 		  AND is_deleted = false
 		GROUP BY team
+		ORDER BY team
 	`, seriesId)
 	return totals, err
 }
