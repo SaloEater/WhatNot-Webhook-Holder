@@ -22,6 +22,8 @@ type Service struct {
 	repository.BundleLabelRepositorier
 	repository.SeriesRepositorier
 	repository.PhotoRepositorier
+	repository.WidgetSeriesStashorpassRepositorier
+	repository.WidgetSeriesPick2Repositorier
 	BreakCache        cacheInterface.Cache[*entity.Break]
 	StreamCache       cacheInterface.Cache[*entity.Stream]
 	ChannelCache      cacheInterface.Cache[*entity.Channel]

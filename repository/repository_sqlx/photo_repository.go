@@ -83,7 +83,7 @@ func (r *PhotoRepository) GetPricesBySeriesId(seriesId int64) ([]*entity.SeriesT
 	totals := []*entity.SeriesTeamTotal{}
 	err := r.DB.Select(&totals, `
 		SELECT team,
-		       SUM(price) FILTER (WHERE is_sold = false) AS price_left,
+		       COALESCE(SUM(price) FILTER (WHERE is_sold = false), 0) AS price_left,
 		       SUM(price) AS total_price
 		FROM photo
 		WHERE series_id = $1
