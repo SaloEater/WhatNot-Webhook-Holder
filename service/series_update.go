@@ -7,6 +7,7 @@ type SeriesUpdateRequest struct {
 	Name         string `json:"name"`
 	UsedCards    int64  `json:"used_cards"`
 	DefaultPrice string `json:"default_price"`
+	TotalCards   int64  `json:"total_cards"`
 }
 
 type SeriesUpdateResponse struct {
@@ -15,7 +16,7 @@ type SeriesUpdateResponse struct {
 
 func (s *Service) SeriesUpdate(r *SeriesUpdateRequest) (*SeriesUpdateResponse, error) {
 	response := &SeriesUpdateResponse{Success: false}
-	err := s.SeriesRepositorier.Update(r.Id, r.Name, r.UsedCards, r.DefaultPrice)
+	err := s.SeriesRepositorier.Update(r.Id, r.Name, r.UsedCards, r.DefaultPrice, r.TotalCards)
 	if err == nil {
 		response.Success = true
 		s.SeriesWithCountCache.Delete(cache.IdToKey(r.Id))

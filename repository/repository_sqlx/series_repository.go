@@ -34,10 +34,10 @@ func (r *SeriesRepository) GetList() ([]*entity.Series, error) {
 	return series, err
 }
 
-func (r *SeriesRepository) Update(id int64, name string, usedCards int64, defaultPrice string) error {
+func (r *SeriesRepository) Update(id int64, name string, usedCards int64, defaultPrice string, totalCards int64) error {
 	_, err := r.DB.Exec(
-		`UPDATE series SET name = $1, used_cards = $2, default_price = $3 WHERE id = $4`,
-		name, usedCards, defaultPrice, id,
+		`UPDATE series SET name = $1, used_cards = $2, default_price = $3, total_cards = $4 WHERE id = $5`,
+		name, usedCards, defaultPrice, totalCards, id,
 	)
 	return err
 }
