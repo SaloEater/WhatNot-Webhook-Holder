@@ -37,6 +37,17 @@ func (r *PhotoRepository) Create(p *entity.Photo) (int64, error) {
 	return id, nil
 }
 
+func (r *PhotoRepository) GetById(id int64) (*entity.Photo, error) {
+	p := &entity.Photo{}
+	err := r.DB.Get(p, `SELECT * FROM photo WHERE id = $1`, id)
+	return p, err
+}
+
+func (r *PhotoRepository) UpdateUrl(id int64, url string) error {
+	_, err := r.DB.Exec(`UPDATE photo SET url = $1 WHERE id = $2`, url, id)
+	return err
+}
+
 func (r *PhotoRepository) GetBySeriesId(seriesId int64) ([]*entity.Photo, error) {
 	photos := []*entity.Photo{}
 	err := r.DB.Select(&photos, `SELECT * FROM photo WHERE series_id = $1`, seriesId)
