@@ -89,31 +89,32 @@ func main() {
 	}
 
 	svc := &service.Service{
-		BreakRepositorier:                     &repository_sqlx.BreakRepository{DB: db},
-		StreamRepositorier:                    &repository_sqlx.StreamRepository{DB: db},
-		EventRepositorier:                     &repository_sqlx.EventRepository{DB: db},
-		ChannelRepositorier:                   &repository_sqlx.ChannelRepository{DB: db},
-		TGChatRepositorier:                    &repository_sqlx.TGChatRepository{DB: db},
-		BoxRepositorier:                       &repository_sqlx.BoxRepository{DB: db},
-		BoxTypeRepositorier:                   &repository_sqlx.BoxTypeRepository{DB: db},
-		BundleBoxesRepositorier:               &repository_sqlx.BundleBoxesRepository{DB: db},
-		BundleLabelRepositorier:               &repository_sqlx.BundleLabelRepository{DB: db},
-		BundleRepositorier:                    &repository_sqlx.BundleRepository{DB: db},
-		SeriesRepositorier:                    &repository_sqlx.SeriesRepository{DB: db},
-		PhotoRepositorier:                     &repository_sqlx.PhotoRepository{DB: db},
-		LocationRepositorier:                  &repository_sqlx.LocationRepository{DB: db},
-		TrackingRepositorier:                  &repository_sqlx.TrackingRepository{DB: db},
-		WidgetSeriesStashorpassRepositorier:   &repository_sqlx.WidgetSeriesStashorpassRepository{DB: db},
-		WidgetSeriesPick2Repositorier:         &repository_sqlx.WidgetSeriesPick2Repository{DB: db},
-		WidgetSeriesBoxesPerBreakRepositorier: &repository_sqlx.WidgetSeriesBoxesPerBreakRepository{DB: db},
-		BreakCache:                            &breakCache,
-		StreamCache:                           &streamCache,
-		ChannelCache:                          &channelCache,
-		SeriesPricesCache:                     &seriesPricesCache,
-		SeriesWithCountCache:                  &seriesWithCountCache,
-		TelegramBot:                           bot,
-		StreamShipmenter:                      clickup.Init(os.Getenv("clickup_api_key"), db),
-		DigitalOceaner:                        digital_ocean.InitDigitalOcean(os.Getenv("spaces_key"), os.Getenv("spaces_secret"), os.Getenv("spaces_endpoint"), os.Getenv("spaces_region"), os.Getenv("spaces_url")),
+		BreakRepositorier:                      &repository_sqlx.BreakRepository{DB: db},
+		StreamRepositorier:                     &repository_sqlx.StreamRepository{DB: db},
+		EventRepositorier:                      &repository_sqlx.EventRepository{DB: db},
+		ChannelRepositorier:                    &repository_sqlx.ChannelRepository{DB: db},
+		TGChatRepositorier:                     &repository_sqlx.TGChatRepository{DB: db},
+		BoxRepositorier:                        &repository_sqlx.BoxRepository{DB: db},
+		BoxTypeRepositorier:                    &repository_sqlx.BoxTypeRepository{DB: db},
+		BundleBoxesRepositorier:                &repository_sqlx.BundleBoxesRepository{DB: db},
+		BundleLabelRepositorier:                &repository_sqlx.BundleLabelRepository{DB: db},
+		BundleRepositorier:                     &repository_sqlx.BundleRepository{DB: db},
+		SeriesRepositorier:                     &repository_sqlx.SeriesRepository{DB: db},
+		PhotoRepositorier:                      &repository_sqlx.PhotoRepository{DB: db},
+		LocationRepositorier:                   &repository_sqlx.LocationRepository{DB: db},
+		TrackingRepositorier:                   &repository_sqlx.TrackingRepository{DB: db},
+		WidgetSeriesStashorpassRepositorier:    &repository_sqlx.WidgetSeriesStashorpassRepository{DB: db},
+		WidgetSeriesPick2Repositorier:          &repository_sqlx.WidgetSeriesPick2Repository{DB: db},
+		WidgetSeriesBoxesPerBreakRepositorier:  &repository_sqlx.WidgetSeriesBoxesPerBreakRepository{DB: db},
+		WidgetChannelCountSettingsRepositorier: &repository_sqlx.WidgetChannelCountSettingsRepository{DB: db},
+		BreakCache:                             &breakCache,
+		StreamCache:                            &streamCache,
+		ChannelCache:                           &channelCache,
+		SeriesPricesCache:                      &seriesPricesCache,
+		SeriesWithCountCache:                   &seriesWithCountCache,
+		TelegramBot:                            bot,
+		StreamShipmenter:                       clickup.Init(os.Getenv("clickup_api_key"), db),
+		DigitalOceaner:                         digital_ocean.InitDigitalOcean(os.Getenv("spaces_key"), os.Getenv("spaces_secret"), os.Getenv("spaces_endpoint"), os.Getenv("spaces_region"), os.Getenv("spaces_url")),
 	}
 	go func() {
 		fmt.Println("Starting telegram bot updates")
@@ -209,6 +210,8 @@ func main() {
 	http.HandleFunc("/api/widget/series/pick2/update", routeBuilder.WrapRoute(apiO.UpdateWidgetSeriesPick2, api.HttpPost, true))
 	http.HandleFunc("/api/widget/series/boxes_per_break", routeBuilder.WrapRoute(apiO.GetWidgetSeriesBoxesPerBreak, api.HttpPost, true))
 	http.HandleFunc("/api/widget/series/boxes_per_break/update", routeBuilder.WrapRoute(apiO.UpdateWidgetSeriesBoxesPerBreak, api.HttpPost, true))
+	http.HandleFunc("/api/widget/channel/count_settings", routeBuilder.WrapRoute(apiO.GetWidgetChannelCountSettings, api.HttpPost, true))
+	http.HandleFunc("/api/widget/channel/count_settings/update", routeBuilder.WrapRoute(apiO.UpdateWidgetChannelCountSettings, api.HttpPost, true))
 
 	port := os.Getenv("port")
 	portInt, err := strconv.Atoi(port)

@@ -25,6 +25,7 @@ type Service struct {
 	repository.WidgetSeriesStashorpassRepositorier
 	repository.WidgetSeriesPick2Repositorier
 	repository.WidgetSeriesBoxesPerBreakRepositorier
+	repository.WidgetChannelCountSettingsRepositorier
 	BreakCache           cacheInterface.Cache[*entity.Break]
 	StreamCache          cacheInterface.Cache[*entity.Stream]
 	ChannelCache         cacheInterface.Cache[*entity.Channel]
