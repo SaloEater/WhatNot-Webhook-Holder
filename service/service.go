@@ -27,11 +27,13 @@ type Service struct {
 	repository.WidgetSeriesBoxesPerBreakRepositorier
 	repository.WidgetChannelCountSettingsRepositorier
 	repository.WidgetBoardPriceRangeRepositorier
-	BreakCache           cacheInterface.Cache[*entity.Break]
-	StreamCache          cacheInterface.Cache[*entity.Stream]
-	ChannelCache         cacheInterface.Cache[*entity.Channel]
-	SeriesPricesCache    cacheInterface.Cache[[]*entity.SeriesTeamTotal]
-	SeriesWithCountCache cacheInterface.Cache[*entity.SeriesWithCount]
+	repository.WidgetCardsBoardSettingsRepositorier
+	BreakCache              cacheInterface.Cache[*entity.Break]
+	StreamCache             cacheInterface.Cache[*entity.Stream]
+	ChannelCache            cacheInterface.Cache[*entity.Channel]
+	SeriesPricesCache       cacheInterface.Cache[[]*entity.SeriesTeamTotal]
+	SeriesWithCountCache    cacheInterface.Cache[*entity.SeriesWithCount]
+	CardsBoardSettingsCache cacheInterface.Cache[*entity.WidgetCardsBoardSettings]
 	TelegramBot          *tgbotapi.BotAPI
 	StreamShipmenter
 	DigitalOceaner

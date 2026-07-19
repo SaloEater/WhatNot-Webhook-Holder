@@ -82,6 +82,7 @@ func main() {
 	channelCache := go_cache.CreateCache[*entity.Channel](10 * time.Hour)
 	seriesPricesCache := go_cache.CreateCache[[]*entity.SeriesTeamTotal](10 * time.Hour)
 	seriesWithCountCache := go_cache.CreateCache[*entity.SeriesWithCount](10 * time.Hour)
+	cardsBoardSettingsCache := go_cache.CreateCache[*entity.WidgetCardsBoardSettings](10 * time.Hour)
 
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("mob_telegram_token"))
 	if err != nil {
@@ -108,11 +109,13 @@ func main() {
 		WidgetSeriesBoxesPerBreakRepositorier:  &repository_sqlx.WidgetSeriesBoxesPerBreakRepository{DB: db},
 		WidgetChannelCountSettingsRepositorier: &repository_sqlx.WidgetChannelCountSettingsRepository{DB: db},
 		WidgetBoardPriceRangeRepositorier:      &repository_sqlx.WidgetBoardPriceRangeRepository{DB: db},
+		WidgetCardsBoardSettingsRepositorier:   &repository_sqlx.WidgetCardsBoardSettingsRepository{DB: db},
 		BreakCache:                             &breakCache,
 		StreamCache:                            &streamCache,
 		ChannelCache:                           &channelCache,
 		SeriesPricesCache:                      &seriesPricesCache,
 		SeriesWithCountCache:                   &seriesWithCountCache,
+		CardsBoardSettingsCache:                &cardsBoardSettingsCache,
 		TelegramBot:                            bot,
 		StreamShipmenter:                       clickup.Init(os.Getenv("clickup_api_key"), db),
 		DigitalOceaner:                         digital_ocean.InitDigitalOcean(os.Getenv("spaces_key"), os.Getenv("spaces_secret"), os.Getenv("spaces_endpoint"), os.Getenv("spaces_region"), os.Getenv("spaces_url")),
@@ -217,6 +220,8 @@ func main() {
 	http.HandleFunc("/api/widget/board/price_ranges/create", routeBuilder.WrapRoute(apiO.CreateWidgetBoardPriceRange, api.HttpPost, true))
 	http.HandleFunc("/api/widget/board/price_ranges/update", routeBuilder.WrapRoute(apiO.UpdateWidgetBoardPriceRange, api.HttpPost, true))
 	http.HandleFunc("/api/widget/board/price_ranges/delete", routeBuilder.WrapRoute(apiO.DeleteWidgetBoardPriceRange, api.HttpPost, true))
+	http.HandleFunc("/api/widget/cards_board", routeBuilder.WrapRoute(apiO.GetWidgetCardsBoardSettings, api.HttpPost, true))
+	http.HandleFunc("/api/widget/cards_board/update", routeBuilder.WrapRoute(apiO.UpdateWidgetCardsBoardSettings, api.HttpPost, true))
 
 	port := os.Getenv("port")
 	portInt, err := strconv.Atoi(port)
