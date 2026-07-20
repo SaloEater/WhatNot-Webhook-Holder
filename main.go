@@ -110,6 +110,7 @@ func main() {
 		WidgetChannelCountSettingsRepositorier: &repository_sqlx.WidgetChannelCountSettingsRepository{DB: db},
 		WidgetBoardPriceRangeRepositorier:      &repository_sqlx.WidgetBoardPriceRangeRepository{DB: db},
 		WidgetCardsBoardSettingsRepositorier:   &repository_sqlx.WidgetCardsBoardSettingsRepository{DB: db},
+		WidgetPresetRepositorier:               &repository_sqlx.WidgetPresetRepository{DB: db},
 		BreakCache:                             &breakCache,
 		StreamCache:                            &streamCache,
 		ChannelCache:                           &channelCache,
@@ -220,6 +221,9 @@ func main() {
 	http.HandleFunc("/api/widget/board/price_ranges/create", routeBuilder.WrapRoute(apiO.CreateWidgetBoardPriceRange, api.HttpPost, true))
 	http.HandleFunc("/api/widget/board/price_ranges/update", routeBuilder.WrapRoute(apiO.UpdateWidgetBoardPriceRange, api.HttpPost, true))
 	http.HandleFunc("/api/widget/board/price_ranges/delete", routeBuilder.WrapRoute(apiO.DeleteWidgetBoardPriceRange, api.HttpPost, true))
+	http.HandleFunc("/api/widget/presets", routeBuilder.WrapRoute(apiO.ListWidgetPresets, api.HttpPost, true))
+	http.HandleFunc("/api/widget/presets/upsert", routeBuilder.WrapRoute(apiO.UpsertWidgetPreset, api.HttpPost, true))
+	http.HandleFunc("/api/widget/presets/delete", routeBuilder.WrapRoute(apiO.DeleteWidgetPreset, api.HttpPost, true))
 	http.HandleFunc("/api/widget/cards_board", routeBuilder.WrapRoute(apiO.GetWidgetCardsBoardSettings, api.HttpPost, true))
 	http.HandleFunc("/api/widget/cards_board/update", routeBuilder.WrapRoute(apiO.UpdateWidgetCardsBoardSettings, api.HttpPost, true))
 
