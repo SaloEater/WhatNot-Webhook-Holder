@@ -22,19 +22,19 @@ func (r *EventRepository) GetAll(ids []int64) ([]*entity.Event, error) {
 	query = r.DB.Rebind(query)
 
 	events := make([]*entity.Event, len(ids))
-	err = r.DB.Select(&events, query, args...)
+	err = r.DB.Unsafe().Select(&events, query, args...)
 	return events, err
 }
 
 func (r *EventRepository) GetAllByBreak(breakId int64) ([]*entity.Event, error) {
 	events := []*entity.Event{}
-	err := r.DB.Select(&events, `SELECT * FROM event WHERE break_id = $1 AND is_deleted = false`, breakId)
+	err := r.DB.Unsafe().Select(&events, `SELECT * FROM event WHERE break_id = $1 AND is_deleted = false`, breakId)
 	return events, err
 }
 
 func (r *EventRepository) Get(id int64) (*entity.Event, error) {
 	var event entity.Event
-	err := r.DB.Get(&event, `SELECT * FROM event where id = $1 AND is_deleted = false`, id)
+	err := r.DB.Unsafe().Get(&event, `SELECT * FROM event where id = $1 AND is_deleted = false`, id)
 	return &event, err
 }
 
@@ -102,7 +102,7 @@ func (r *EventRepository) Create(event *entity.Event) (int64, error) {
 
 func (r *EventRepository) GetAllChildren(eventId int64) ([]*entity.Event, error) {
 	events := []*entity.Event{}
-	err := r.DB.Select(&events, `
+	err := r.DB.Unsafe().Select(&events, `
 		SELECT * FROM event WHERE break_id IN (
 		    SELECT break_id FROM event WHERE id = $1
 		) AND is_deleted = false
@@ -189,7 +189,7 @@ WHERE break_id = oldRecord.breakId;
 
 func (r *EventRepository) GetAvailableByChannelIDAndTeam(channelID int64, team string) (*entity.Event, error) {
 	var event entity.Event
-	err := r.DB.Get(&event, `
+	err := r.DB.Unsafe().Get(&event, `
 		WITH selectedStream AS (
 			SELECT active_stream_id FROM channel WHERE id = $1
 		), selectedBreak AS (

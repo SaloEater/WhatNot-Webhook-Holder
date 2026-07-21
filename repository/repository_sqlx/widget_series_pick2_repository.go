@@ -11,7 +11,7 @@ type WidgetSeriesPick2Repository struct {
 
 func (r *WidgetSeriesPick2Repository) GetByChannel(channelId int64) (*entity.WidgetSeriesPick2, error) {
 	var w entity.WidgetSeriesPick2
-	err := r.DB.Get(&w, `SELECT * FROM widget_series_pick2 WHERE channel_id = $1`, channelId)
+	err := r.DB.Unsafe().Get(&w, `SELECT * FROM widget_series_pick2 WHERE channel_id = $1`, channelId)
 	if err != nil {
 		return &entity.WidgetSeriesPick2{ChannelId: channelId, Price: 0}, nil
 	}

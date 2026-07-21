@@ -12,19 +12,19 @@ type StreamRepository struct {
 
 func (r *StreamRepository) GetAll() ([]*entity.Stream, error) {
 	days := []*entity.Stream{}
-	err := r.DB.Select(&days, `SELECT * FROM stream WHERE is_deleted = false`)
+	err := r.DB.Unsafe().Select(&days, `SELECT * FROM stream WHERE is_deleted = false`)
 	return days, err
 }
 
 func (r *StreamRepository) GetAllByChannelId(channelId int64) ([]*entity.Stream, error) {
 	days := []*entity.Stream{}
-	err := r.DB.Select(&days, `SELECT * FROM stream WHERE is_deleted = false AND channel_id = $1`, channelId)
+	err := r.DB.Unsafe().Select(&days, `SELECT * FROM stream WHERE is_deleted = false AND channel_id = $1`, channelId)
 	return days, err
 }
 
 func (r *StreamRepository) Get(id int64) (*entity.Stream, error) {
 	var day entity.Stream
-	err := r.DB.Get(&day, `SELECT * FROM stream where id = $1 AND is_deleted = false`, id)
+	err := r.DB.Unsafe().Get(&day, `SELECT * FROM stream where id = $1 AND is_deleted = false`, id)
 	return &day, err
 }
 

@@ -59,6 +59,8 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	// Unsafe: ignore result columns with no struct field, so migrations can be applied before the binary that maps them is deployed.
+	db = db.Unsafe()
 
 	service.InitFile()
 	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})

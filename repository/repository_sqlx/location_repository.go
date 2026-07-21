@@ -11,12 +11,12 @@ type LocationRepository struct {
 
 func (r *LocationRepository) GetAll() ([]*entity.Location, error) {
 	var locations []*entity.Location
-	err := r.DB.Select(&locations, "SELECT * FROM location")
+	err := r.DB.Unsafe().Select(&locations, "SELECT * FROM location")
 	return locations, err
 }
 
 func (r *LocationRepository) GetByID(id int64) (*entity.Location, error) {
 	var location entity.Location
-	err := r.DB.Get(&location, "SELECT * FROM location WHERE id=$1", id)
+	err := r.DB.Unsafe().Get(&location, "SELECT * FROM location WHERE id=$1", id)
 	return &location, err
 }

@@ -11,7 +11,7 @@ type WidgetPresetRepository struct {
 
 func (r *WidgetPresetRepository) ListByChannel(channelId int64) ([]*entity.WidgetPreset, error) {
 	var rows []*entity.WidgetPreset
-	err := r.DB.Select(&rows, `SELECT * FROM widget_presets WHERE channel_id = $1 ORDER BY name`, channelId)
+	err := r.DB.Unsafe().Select(&rows, `SELECT * FROM widget_presets WHERE channel_id = $1 ORDER BY name`, channelId)
 	if err != nil {
 		return nil, err
 	}

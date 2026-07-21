@@ -11,7 +11,7 @@ type WidgetChannelCountSettingsRepository struct {
 
 func (r *WidgetChannelCountSettingsRepository) GetByChannel(channelId int64) (*entity.WidgetChannelCountSettings, error) {
 	var w entity.WidgetChannelCountSettings
-	err := r.DB.Get(&w, `SELECT * FROM widget_channel_count_settings WHERE channel_id = $1`, channelId)
+	err := r.DB.Unsafe().Get(&w, `SELECT * FROM widget_channel_count_settings WHERE channel_id = $1`, channelId)
 	if err != nil {
 		def := &entity.WidgetChannelCountSettings{ChannelId: channelId, ShowPercentage: false}
 		_ = r.Upsert(def)

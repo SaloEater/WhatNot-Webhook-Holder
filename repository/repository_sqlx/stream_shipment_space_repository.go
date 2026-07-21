@@ -12,6 +12,6 @@ type StreamShipmentSpaceRepository struct {
 
 func (r *StreamShipmentSpaceRepository) GetByChannelID(ctx context.Context, channelID int64) (*entity.StreamShipmentSpace, error) {
 	var shipment entity.StreamShipmentSpace
-	err := r.DB.Get(&shipment, `SELECT * FROM stream_shipment_space WHERE channel_id = $1`, channelID)
+	err := r.DB.Unsafe().Get(&shipment, `SELECT * FROM stream_shipment_space WHERE channel_id = $1`, channelID)
 	return &shipment, err
 }

@@ -12,4 +12,5 @@ type Photo struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	IsDeleted bool      `json:"is_deleted" db:"is_deleted"`
 	Price     int64     `json:"price"      db:"price"`
+	Rotation  int64     `json:"rotation"   db:"rotation"`
 }

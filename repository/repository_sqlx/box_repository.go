@@ -1,9 +1,10 @@
 package repository_sqlx
 
 import (
+	"strings"
+
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/jmoiron/sqlx"
-	"strings"
 )
 
 type BoxRepository struct {
@@ -12,7 +13,7 @@ type BoxRepository struct {
 
 func (r *BoxRepository) GetByBundleIDAndItemIndex(bundleID int64, itemIndex int) (*entity.Box, error) {
 	var box entity.Box
-	err := r.DB.Get(&box, `SELECT * FROM box WHERE bundle_id = $1 AND item_index = $2`, bundleID, itemIndex)
+	err := r.DB.Unsafe().Get(&box, `SELECT * FROM box WHERE bundle_id = $1 AND item_index = $2`, bundleID, itemIndex)
 	return &box, err
 }
 

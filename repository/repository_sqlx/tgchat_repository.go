@@ -26,7 +26,7 @@ func (r *TGChatRepository) CreateOrReEnable(chat *entity.TGChat) error {
 
 func (r *TGChatRepository) GetByChatID(chatID int64) (*entity.TGChat, error) {
 	var chat entity.TGChat
-	err := r.DB.Get(&chat, `SELECT * FROM tg_chat WHERE chat_id = $1`, chatID)
+	err := r.DB.Unsafe().Get(&chat, `SELECT * FROM tg_chat WHERE chat_id = $1`, chatID)
 	return &chat, err
 }
 
@@ -43,6 +43,6 @@ func (r *TGChatRepository) Update(chat *entity.TGChat) error {
 
 func (r *TGChatRepository) GetAllActive() ([]*entity.TGChat, error) {
 	chats := []*entity.TGChat{}
-	err := r.DB.Select(&chats, `SELECT * FROM tg_chat WHERE is_disabled = false`)
+	err := r.DB.Unsafe().Select(&chats, `SELECT * FROM tg_chat WHERE is_disabled = false`)
 	return chats, err
 }

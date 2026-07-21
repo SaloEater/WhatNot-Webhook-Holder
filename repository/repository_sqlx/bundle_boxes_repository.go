@@ -23,13 +23,13 @@ func (r *BundleBoxesRepository) Create(bundle *entity.BundleBoxes) error {
 
 func (r *BundleBoxesRepository) GetAllByBundle(bundleID int64) ([]*entity.BundleBoxes, error) {
 	var bundles []*entity.BundleBoxes
-	err := r.DB.Select(&bundles, `SELECT * FROM bundle_boxes WHERE bundle_id = $1`, bundleID)
+	err := r.DB.Unsafe().Select(&bundles, `SELECT * FROM bundle_boxes WHERE bundle_id = $1`, bundleID)
 	return bundles, err
 }
 
 func (r *BundleBoxesRepository) GetByID(id int64) (*entity.BundleBoxes, error) {
 	var bundle entity.BundleBoxes
-	err := r.DB.Get(&bundle, `SELECT * FROM bundle_boxes WHERE id = $1`, id)
+	err := r.DB.Unsafe().Get(&bundle, `SELECT * FROM bundle_boxes WHERE id = $1`, id)
 	return &bundle, err
 }
 
@@ -48,6 +48,6 @@ func (r *BundleBoxesRepository) Delete(id int64) error {
 
 func (r *BundleBoxesRepository) GetByBundleIDAndBoxTypeID(bundleID, boxTypeID int64) (*entity.BundleBoxes, error) {
 	var bundle entity.BundleBoxes
-	err := r.DB.Get(&bundle, `SELECT * FROM bundle_boxes WHERE bundle_id = $1 AND box_type_id = $2`, bundleID, boxTypeID)
+	err := r.DB.Unsafe().Get(&bundle, `SELECT * FROM bundle_boxes WHERE bundle_id = $1 AND box_type_id = $2`, bundleID, boxTypeID)
 	return &bundle, err
 }

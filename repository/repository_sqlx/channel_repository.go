@@ -12,19 +12,19 @@ type ChannelRepository struct {
 
 func (r *ChannelRepository) GetAll() ([]*entity.Channel, error) {
 	channels := []*entity.Channel{}
-	err := r.DB.Select(&channels, `SELECT * FROM channel WHERE is_deleted = false`)
+	err := r.DB.Unsafe().Select(&channels, `SELECT * FROM channel WHERE is_deleted = false`)
 	return channels, err
 }
 
 func (r *ChannelRepository) Get(id int64) (*entity.Channel, error) {
 	var channel entity.Channel
-	err := r.DB.Get(&channel, `SELECT * FROM channel where id = $1 AND is_deleted = false`, id)
+	err := r.DB.Unsafe().Get(&channel, `SELECT * FROM channel where id = $1 AND is_deleted = false`, id)
 	return &channel, err
 }
 
 func (r *ChannelRepository) GetByStream(streamId int64) (*entity.Channel, error) {
 	var channel entity.Channel
-	err := r.DB.Get(&channel, `SELECT channel.* FROM channel INNER JOIN public.stream s on channel.id = s.channel_id where s.id = $1 AND channel.is_deleted = false`, streamId)
+	err := r.DB.Unsafe().Get(&channel, `SELECT channel.* FROM channel INNER JOIN public.stream s on channel.id = s.channel_id where s.id = $1 AND channel.is_deleted = false`, streamId)
 	return &channel, err
 }
 

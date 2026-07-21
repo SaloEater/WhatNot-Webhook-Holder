@@ -9,6 +9,7 @@ type PhotoRepositorier interface {
 	GetUnsoldByChannelActiveStream(channelId int64, withSold bool) ([]*entity.Photo, error)
 	Update(id int64, name, team string, price int64) error
 	UpdateUrl(id int64, url string) error
+	UpdateRotation(id int64, rotation int64) error
 	MarkSold(id int64, sold bool) error
 	Delete(id int64) error
 	Restore(id int64) error

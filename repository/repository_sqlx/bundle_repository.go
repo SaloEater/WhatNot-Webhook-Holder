@@ -23,7 +23,7 @@ func (r *BundleRepository) Create(bundle *entity.Bundle) error {
 
 func (r *BundleRepository) GetByID(id int64) (*entity.Bundle, error) {
 	var bundle entity.Bundle
-	err := r.DB.Get(&bundle, `SELECT * FROM bundle WHERE id = $1 and is_deleted = false`, id)
+	err := r.DB.Unsafe().Get(&bundle, `SELECT * FROM bundle WHERE id = $1 and is_deleted = false`, id)
 	return &bundle, err
 }
 
@@ -32,14 +32,14 @@ func (r *BundleRepository) GetList(locationIds []int64) ([]*entity.Bundle, error
 	var err error
 
 	if len(locationIds) == 0 {
-		err = r.DB.Select(&bundles, `SELECT * FROM bundle WHERE is_deleted = false`)
+		err = r.DB.Unsafe().Select(&bundles, `SELECT * FROM bundle WHERE is_deleted = false`)
 	} else {
 		query, args, err := sqlx.In(`SELECT * FROM bundle WHERE location_id IN (?) AND is_deleted = false`, locationIds)
 		if err != nil {
 			return nil, err
 		}
 		query = r.DB.Rebind(query)
-		err = r.DB.Select(&bundles, query, args...)
+		err = r.DB.Unsafe().Select(&bundles, query, args...)
 	}
 
 	return bundles, err

@@ -42,7 +42,7 @@ func (r *BreakRepository) Create(dayBreak *entity.Break) (int64, error) {
 
 func (r *BreakRepository) Get(id int64) (*entity.Break, error) {
 	var dayBreak entity.Break
-	err := r.DB.Get(&dayBreak, `SELECT * FROM break WHERE id = $1 AND is_deleted = false`, id)
+	err := r.DB.Unsafe().Get(&dayBreak, `SELECT * FROM break WHERE id = $1 AND is_deleted = false`, id)
 	return &dayBreak, err
 }
 
@@ -71,7 +71,7 @@ func (r *BreakRepository) Update(dayBreak *entity.Break) error {
 
 func (r *BreakRepository) GetBreaksByStreamId(dayId int64) ([]*entity.Break, error) {
 	breaks := []*entity.Break{}
-	err := r.DB.Select(&breaks, `SELECT * FROM break WHERE day_id = $1 AND is_deleted = false`, dayId)
+	err := r.DB.Unsafe().Select(&breaks, `SELECT * FROM break WHERE day_id = $1 AND is_deleted = false`, dayId)
 	return breaks, err
 }
 

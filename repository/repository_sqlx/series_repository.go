@@ -24,13 +24,13 @@ func (r *SeriesRepository) Create(name string, totalCards int64, defaultPrice st
 
 func (r *SeriesRepository) Get(id int64) (*entity.Series, error) {
 	var s entity.Series
-	err := r.DB.Get(&s, `SELECT * FROM series WHERE id = $1 AND is_deleted = false`, id)
+	err := r.DB.Unsafe().Get(&s, `SELECT * FROM series WHERE id = $1 AND is_deleted = false`, id)
 	return &s, err
 }
 
 func (r *SeriesRepository) GetList() ([]*entity.Series, error) {
 	series := []*entity.Series{}
-	err := r.DB.Select(&series, `SELECT * FROM series WHERE is_deleted = false ORDER BY created_at DESC`)
+	err := r.DB.Unsafe().Select(&series, `SELECT * FROM series WHERE is_deleted = false ORDER BY created_at DESC`)
 	return series, err
 }
 

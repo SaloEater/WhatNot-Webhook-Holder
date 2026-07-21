@@ -11,7 +11,7 @@ type WidgetBoardPriceRangeRepository struct {
 
 func (r *WidgetBoardPriceRangeRepository) ListByChannel(channelId int64) ([]*entity.WidgetBoardPriceRange, error) {
 	var rows []*entity.WidgetBoardPriceRange
-	err := r.DB.Select(&rows, `SELECT * FROM widget_board_price_ranges WHERE channel_id = $1 ORDER BY price_from DESC`, channelId)
+	err := r.DB.Unsafe().Select(&rows, `SELECT * FROM widget_board_price_ranges WHERE channel_id = $1 ORDER BY price_from DESC`, channelId)
 	if err != nil {
 		return nil, err
 	}

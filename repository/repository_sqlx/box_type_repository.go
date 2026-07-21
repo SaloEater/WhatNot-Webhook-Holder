@@ -11,7 +11,7 @@ type BoxTypeRepository struct {
 
 func (r *BoxTypeRepository) GetAll() ([]*entity.BoxType, error) {
 	bundleBoxes := make([]*entity.BoxType, 0)
-	err := r.DB.Select(&bundleBoxes, "SELECT * FROM box_type")
+	err := r.DB.Unsafe().Select(&bundleBoxes, "SELECT * FROM box_type")
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +20,7 @@ func (r *BoxTypeRepository) GetAll() ([]*entity.BoxType, error) {
 
 func (r *BoxTypeRepository) GetByID(id int64) (*entity.BoxType, error) {
 	boxType := &entity.BoxType{}
-	err := r.DB.Get(boxType, "SELECT * FROM box_type WHERE id = $1", id)
+	err := r.DB.Unsafe().Get(boxType, "SELECT * FROM box_type WHERE id = $1", id)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (r *BoxTypeRepository) Create(boxType *entity.BoxType) error {
 }
 
 func (r *BoxTypeRepository) Update(boxType *entity.BoxType) error {
-	_, err := r.DB.Exec("UPDATE box_type SET name = $1, image = $2 WHERE id = $3", boxType.Name, boxType.Image, boxType.ID)
+	_, err := r.DB.Unsafe().Exec("UPDATE box_type SET name = $1, image = $2 WHERE id = $3", boxType.Name, boxType.Image, boxType.ID)
 	if err != nil {
 		return err
 	}

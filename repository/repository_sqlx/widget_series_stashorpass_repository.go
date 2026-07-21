@@ -11,7 +11,7 @@ type WidgetSeriesStashorpassRepository struct {
 
 func (r *WidgetSeriesStashorpassRepository) GetByChannel(channelId int64) (*entity.WidgetSeriesStashorpass, error) {
 	var w entity.WidgetSeriesStashorpass
-	err := r.DB.Get(&w, `SELECT * FROM widget_series_stashorpass WHERE channel_id = $1`, channelId)
+	err := r.DB.Unsafe().Get(&w, `SELECT * FROM widget_series_stashorpass WHERE channel_id = $1`, channelId)
 	if err != nil {
 		return &entity.WidgetSeriesStashorpass{ChannelId: channelId, Price: 0}, nil
 	}

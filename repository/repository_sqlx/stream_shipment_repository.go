@@ -12,7 +12,7 @@ type StreamShipmentRepository struct {
 
 func (s StreamShipmentRepository) GetByStreamID(ctx context.Context, streamID int64) (*entity.StreamShipment, error) {
 	shipment := &entity.StreamShipment{}
-	err := s.DB.GetContext(ctx, shipment, `
+	err := s.DB.Unsafe().GetContext(ctx, shipment, `
 SELECT *
 FROM stream_shipment
 WHERE stream_id = $1`, streamID)

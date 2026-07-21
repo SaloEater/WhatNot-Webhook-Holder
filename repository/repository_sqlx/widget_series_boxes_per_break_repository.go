@@ -11,7 +11,7 @@ type WidgetSeriesBoxesPerBreakRepository struct {
 
 func (r *WidgetSeriesBoxesPerBreakRepository) GetBySeries(seriesId int64) (*entity.WidgetSeriesBoxesPerBreak, error) {
 	var w entity.WidgetSeriesBoxesPerBreak
-	err := r.DB.Get(&w, `SELECT * FROM widget_series_boxes_per_break WHERE series_id = $1`, seriesId)
+	err := r.DB.Unsafe().Get(&w, `SELECT * FROM widget_series_boxes_per_break WHERE series_id = $1`, seriesId)
 	if err != nil {
 		return &entity.WidgetSeriesBoxesPerBreak{SeriesId: seriesId, Amount: 0}, nil
 	}
