@@ -1,12 +1,20 @@
 package service
 
-import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+import (
+	"fmt"
+
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+)
 
 type PhotoUploadResponse struct {
 	Id int64 `json:"id"`
 }
 
-func (s *Service) PhotoUpload(seriesID int64, data []byte, name, team string, price int64, filename string) (*PhotoUploadResponse, error) {
+func (s *Service) PhotoUpload(seriesID int64, data []byte, name, team string, price int64, rotation int64, filename string) (*PhotoUploadResponse, error) {
+	if rotation != 0 && rotation != 90 && rotation != 180 && rotation != 270 {
+		return nil, fmt.Errorf("invalid rotation: %d", rotation)
+	}
+
 	url, err := s.DigitalOceaner.SaveCardPhoto(data, seriesID, filename)
 	if err != nil {
 		return nil, err
@@ -17,6 +25,7 @@ func (s *Service) PhotoUpload(seriesID int64, data []byte, name, team string, pr
 		Name:     name,
 		Team:     team,
 		Price:    price,
+		Rotation: rotation,
 		Url:      url,
 	})
 	if err != nil {
