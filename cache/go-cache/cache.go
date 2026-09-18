@@ -11,7 +11,15 @@ type GoCache[T any] struct {
 
 func (c *GoCache[T]) Get(key string) (T, bool) {
 	entity, found := c.Cache.Get(key)
-	return entity.(T), found
+	// On a miss go-cache hands back a nil interface, and asserting a nil interface to any
+	// concrete T panics ("interface conversion: interface {} is nil") — so a bare Get on a cold
+	// key used to take the whole HTTP handler down. The older callers only survived by checking
+	// Has() first; a Get that is safe to call on a miss removes that trap for everyone.
+	if !found {
+		var zero T
+		return zero, false
+	}
+	return entity.(T), true
 }
 
 func (c *GoCache[T]) Set(key string, entity T) {
