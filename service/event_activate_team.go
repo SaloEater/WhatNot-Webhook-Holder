@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 )
 
@@ -48,6 +49,7 @@ func (s *Service) ActivateTeamEvent(r *ActivateTeamEventRequest) (*ActivateTeamE
 	if err != nil {
 		return nil, err
 	}
+	s.EventsCache.Delete(cache.IdToKey(event.BreakId))
 
 	return &ActivateTeamEventResponse{Success: true}, nil
 }

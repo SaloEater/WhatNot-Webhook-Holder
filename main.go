@@ -59,6 +59,12 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	// Cap the pool: the managed tier allows ~22-25 connections (3 reserved for SUPERUSER roles;
+	// migrations/psql/a second instance need slots too). Beyond this cap, requests queue inside
+	// Go instead of failing at Postgres with "remaining connection slots are reserved...".
+	db.SetMaxOpenConns(15)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(30 * time.Minute)
 	// Unsafe: ignore result columns with no struct field, so migrations can be applied before the binary that maps them is deployed.
 	db = db.Unsafe()
 
@@ -87,6 +93,10 @@ func main() {
 	cardsBoardSettingsCache := go_cache.CreateCache[*entity.WidgetCardsBoardSettings](10 * time.Hour)
 	widgetSeriesStashorpassCache := go_cache.CreateCache[*entity.WidgetSeriesStashorpass](10 * time.Hour)
 	widgetSeriesPick2Cache := go_cache.CreateCache[*entity.WidgetSeriesPick2](10 * time.Hour)
+	// TTL is a backstop for any write path the invalidation misses; freshness comes from invalidation.
+	// CreateCache(duration) passes duration-5m as the go-cache default expiration, and go-cache treats
+	// a default expiration of 0 as "never expire" - so pass 10m here for an effective TTL of 5m.
+	eventsCache := go_cache.CreateCache[[]*entity.Event](10 * time.Minute)
 
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("mob_telegram_token"))
 	if err != nil {
@@ -128,6 +138,7 @@ func main() {
 		CardsBoardSettingsCache:                &cardsBoardSettingsCache,
 		WidgetSeriesStashorpassCache:           &widgetSeriesStashorpassCache,
 		WidgetSeriesPick2Cache:                 &widgetSeriesPick2Cache,
+		EventsCache:                            &eventsCache,
 		TelegramBot:                            bot,
 		StreamShipmenter:                       clickup.Init(os.Getenv("clickup_api_key"), db),
 		DigitalOceaner:                         digital_ocean.InitDigitalOcean(os.Getenv("spaces_key"), os.Getenv("spaces_secret"), os.Getenv("spaces_endpoint"), os.Getenv("spaces_region"), os.Getenv("spaces_url")),

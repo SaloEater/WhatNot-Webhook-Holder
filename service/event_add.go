@@ -1,6 +1,9 @@
 package service
 
-import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+import (
+	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+)
 
 type AddEventRequest struct {
 	BreakId      int64 `json:"break_id"`
@@ -32,6 +35,7 @@ func (s *Service) AddEvent(r *AddEventRequest) (*AddEventResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+	s.EventsCache.Delete(cache.IdToKey(r.BreakId))
 
 	return &AddEventResponse{Id: id}, nil
 }

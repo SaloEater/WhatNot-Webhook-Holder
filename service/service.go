@@ -42,7 +42,11 @@ type Service struct {
 	CardsBoardSettingsCache      cacheInterface.Cache[*entity.WidgetCardsBoardSettings]
 	WidgetSeriesStashorpassCache cacheInterface.Cache[*entity.WidgetSeriesStashorpass]
 	WidgetSeriesPick2Cache       cacheInterface.Cache[*entity.WidgetSeriesPick2]
-	TelegramBot                  *tgbotapi.BotAPI
+	// EventsCache is keyed by break id. Only the read endpoint (GetBreakEvents) serves from this cache;
+	// any service that fetches events in order to mutate them must read from the repository, or it
+	// would mutate the cached slice in place.
+	EventsCache cacheInterface.Cache[[]*entity.Event]
+	TelegramBot *tgbotapi.BotAPI
 	StreamShipmenter
 	DigitalOceaner
 }

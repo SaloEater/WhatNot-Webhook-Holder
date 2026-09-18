@@ -1,6 +1,9 @@
 package service
 
-import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+import (
+	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+)
 
 type UpdateAllEventsRequest struct {
 	Events []*UpdateEventRequest `json:"events"`
@@ -42,6 +45,14 @@ func (s *Service) UpdateAllEvents(r *UpdateAllEventsRequest) (*UpdateAllEventsRe
 	err = s.EventRepositorier.UpdateAll(events)
 	if err == nil {
 		response.Success = true
+		// The batch may span multiple breaks, so invalidate every distinct break id in it.
+		seenBreakIds := make(map[int64]bool, len(events))
+		for _, event := range events {
+			if !seenBreakIds[event.BreakId] {
+				seenBreakIds[event.BreakId] = true
+				s.EventsCache.Delete(cache.IdToKey(event.BreakId))
+			}
+		}
 	}
 
 	return response, nil
