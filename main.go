@@ -231,6 +231,7 @@ func main() {
 	http.HandleFunc("/api/photo/restore", routeBuilder.WrapRoute(apiO.PhotoRestore, api.HttpPost, true))
 	http.HandleFunc("/api/photo/board", routeBuilder.WrapRoute(apiO.PhotoGetForBoard, api.HttpPost, true))
 	http.HandleFunc("/api/photo/rotate", routeBuilder.WrapRoute(apiO.PhotoRotate, api.HttpPost, true))
+	http.HandleFunc("/api/photo/bounds", routeBuilder.WrapRoute(apiO.PhotoBounds, api.HttpPost, true))
 	http.HandleFunc("/api/photo/thumbnail", routeBuilder.WrapRoute(apiO.PhotoThumbnail, api.HttpPost, true))
 	http.HandleFunc("/api/photo/update-image", routeBuilder.WrapRoute(apiO.PhotoUpdateImage, api.HttpPost, true))
 

@@ -10,9 +10,19 @@ type PhotoUploadResponse struct {
 	Id int64 `json:"id"`
 }
 
-func (s *Service) PhotoUpload(seriesID int64, data []byte, name, team string, price int64, rotation int64, filename string, thumbData []byte, thumbFilename string) (*PhotoUploadResponse, error) {
+func (s *Service) PhotoUpload(seriesID int64, data []byte, name, team string, price int64, rotation int64, filename string, thumbData []byte, thumbFilename string, artBounds, labelBounds *entity.Bounds, labelText *entity.LabelText) (*PhotoUploadResponse, error) {
 	if rotation != 0 && rotation != 90 && rotation != 180 && rotation != 270 {
 		return nil, fmt.Errorf("invalid rotation: %d", rotation)
+	}
+
+	version, art, label, err := resolvePhotoBounds(artBounds, labelBounds)
+	if err != nil {
+		return nil, err
+	}
+
+	labelTextJSON, err := resolveLabelText(artBounds, labelText)
+	if err != nil {
+		return nil, err
 	}
 
 	url, err := s.DigitalOceaner.SaveCardPhoto(data, seriesID, filename)
@@ -36,6 +46,16 @@ func (s *Service) PhotoUpload(seriesID int64, data []byte, name, team string, pr
 		Rotation:  rotation,
 		Url:       url,
 		Thumbnail: thumbnail,
+		Version:   version,
+		ArtX:      art.X,
+		ArtY:      art.Y,
+		ArtW:      art.W,
+		ArtH:      art.H,
+		LabelX:    label.X,
+		LabelY:    label.Y,
+		LabelW:    label.W,
+		LabelH:    label.H,
+		LabelText: labelTextJSON,
 	})
 	if err != nil {
 		//TODO: remove photo from DO

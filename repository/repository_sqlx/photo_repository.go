@@ -14,7 +14,8 @@ type PhotoRepository struct {
 func (r *PhotoRepository) Create(p *entity.Photo) (int64, error) {
 	var id int64
 	rows, err := r.DB.NamedQuery(`INSERT INTO photo (
-		series_id, name, team, price, rotation, url, thumbnail
+		series_id, name, team, price, rotation, url, thumbnail,
+		version, art_x, art_y, art_w, art_h, label_x, label_y, label_w, label_h, label_text
 	) VALUES (
 		:series_id,
 		:name,
@@ -22,7 +23,8 @@ func (r *PhotoRepository) Create(p *entity.Photo) (int64, error) {
 		:price,
 		:rotation,
 		:url,
-		:thumbnail
+		:thumbnail,
+		:version, :art_x, :art_y, :art_w, :art_h, :label_x, :label_y, :label_w, :label_h, :label_text
 	) RETURNING (id)`, p)
 	if err != nil {
 		return 0, err
@@ -46,7 +48,17 @@ func (r *PhotoRepository) GetById(id int64) (*entity.Photo, error) {
 }
 
 func (r *PhotoRepository) UpdateUrl(id int64, url string) error {
-	_, err := r.DB.Exec(`UPDATE photo SET url = $1 WHERE id = $2`, url, id)
+	_, err := r.DB.Exec(`UPDATE photo SET url = $1, version = -1,
+		art_x = 0, art_y = 0, art_w = 0, art_h = 0,
+		label_x = 0, label_y = 0, label_w = 0, label_h = 0, label_text = '' WHERE id = $2`, url, id)
+	return err
+}
+
+func (r *PhotoRepository) UpdateBounds(id int64, version int64, art entity.Bounds, label entity.Bounds, labelText string) error {
+	_, err := r.DB.Exec(`UPDATE photo SET version = $1,
+		art_x = $2, art_y = $3, art_w = $4, art_h = $5,
+		label_x = $6, label_y = $7, label_w = $8, label_h = $9, label_text = $10 WHERE id = $11`,
+		version, art.X, art.Y, art.W, art.H, label.X, label.Y, label.W, label.H, labelText, id)
 	return err
 }
 

@@ -1,0 +1,9 @@
+ALTER TABLE photo DROP COLUMN label_h;
+ALTER TABLE photo DROP COLUMN label_w;
+ALTER TABLE photo DROP COLUMN label_y;
+ALTER TABLE photo DROP COLUMN label_x;
+ALTER TABLE photo DROP COLUMN art_h;
+ALTER TABLE photo DROP COLUMN art_w;
+ALTER TABLE photo DROP COLUMN art_y;
+ALTER TABLE photo DROP COLUMN art_x;
+ALTER TABLE photo DROP COLUMN version;

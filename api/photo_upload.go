@@ -1,7 +1,9 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"io"
 	"net/http"
 	"strconv"
@@ -49,5 +51,26 @@ func (a *API) PhotoUpload(w http.ResponseWriter, r *http.Request) (any, error) {
 	price, _ := strconv.ParseInt(r.FormValue("price"), 10, 64)
 	rotation, _ := strconv.ParseInt(r.FormValue("rotation"), 10, 64)
 
-	return a.Service.PhotoUpload(seriesID, data, name, team, price, rotation, header.Filename, thumbData, thumbFilename)
+	var artBounds, labelBounds *entity.Bounds
+	if v := r.FormValue("art_bounds"); v != "" {
+		artBounds = &entity.Bounds{}
+		if err := json.Unmarshal([]byte(v), artBounds); err != nil {
+			return nil, fmt.Errorf("invalid art_bounds: %w", err)
+		}
+	}
+	if v := r.FormValue("label_bounds"); v != "" {
+		labelBounds = &entity.Bounds{}
+		if err := json.Unmarshal([]byte(v), labelBounds); err != nil {
+			return nil, fmt.Errorf("invalid label_bounds: %w", err)
+		}
+	}
+	var labelText *entity.LabelText
+	if v := r.FormValue("label_text"); v != "" {
+		var err error
+		if labelText, err = entity.ParseLabelText(v); err != nil {
+			return nil, fmt.Errorf("invalid label_text: %w", err)
+		}
+	}
+
+	return a.Service.PhotoUpload(seriesID, data, name, team, price, rotation, header.Filename, thumbData, thumbFilename, artBounds, labelBounds, labelText)
 }

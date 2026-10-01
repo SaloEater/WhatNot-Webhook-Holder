@@ -1,0 +1,1 @@
+ALTER TABLE photo ADD COLUMN label_text TEXT NOT NULL DEFAULT '';
