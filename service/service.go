@@ -32,6 +32,7 @@ type Service struct {
 	repository.WidgetPresetRepositorier
 	repository.LayoutConfigRepositorier
 	repository.LayoutPresetRepositorier
+	repository.SeriesPresetRepositorier
 	repository.LayoutImageRepositorier
 	repository.OverlayStateRepositorier
 	BreakCache                   cacheInterface.Cache[*entity.Break]

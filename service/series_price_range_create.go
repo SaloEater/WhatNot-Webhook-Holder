@@ -7,10 +7,11 @@ import (
 )
 
 type SeriesPriceRangeCreateRequest struct {
-	SeriesId  int64 `json:"series_id"`
-	PriceFrom int   `json:"price_from"`
-	PriceTo   *int  `json:"price_to"`
-	Count     int   `json:"count"`
+	SeriesId  int64  `json:"series_id"`
+	PriceFrom int    `json:"price_from"`
+	PriceTo   *int   `json:"price_to"`
+	Count     int    `json:"count"`
+	Label     string `json:"label"`
 }
 
 type SeriesPriceRangeCreateResponse struct {
@@ -26,6 +27,7 @@ func (s *Service) SeriesPriceRangeCreate(r *SeriesPriceRangeCreateRequest) (*Ser
 		PriceFrom: r.PriceFrom,
 		PriceTo:   r.PriceTo,
 		Count:     r.Count,
+		Label:     r.Label,
 	})
 	if err != nil {
 		return nil, err

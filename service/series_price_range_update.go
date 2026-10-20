@@ -3,10 +3,11 @@ package service
 import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 
 type SeriesPriceRangeUpdateRequest struct {
-	Id        int64 `json:"id"`
-	PriceFrom int   `json:"price_from"`
-	PriceTo   *int  `json:"price_to"`
-	Count     int   `json:"count"`
+	Id        int64  `json:"id"`
+	PriceFrom int    `json:"price_from"`
+	PriceTo   *int   `json:"price_to"`
+	Count     int    `json:"count"`
+	Label     string `json:"label"`
 }
 
 type SeriesPriceRangeUpdateResponse struct {
@@ -22,6 +23,7 @@ func (s *Service) SeriesPriceRangeUpdate(r *SeriesPriceRangeUpdateRequest) (*Ser
 		PriceFrom: r.PriceFrom,
 		PriceTo:   r.PriceTo,
 		Count:     r.Count,
+		Label:     r.Label,
 	})
 	if err != nil {
 		return nil, err

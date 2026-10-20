@@ -128,6 +128,7 @@ func main() {
 		WidgetPresetRepositorier:               &repository_sqlx.WidgetPresetRepository{DB: db},
 		LayoutConfigRepositorier:               &repository_sqlx.LayoutConfigRepository{DB: db},
 		LayoutPresetRepositorier:               &repository_sqlx.LayoutPresetRepository{DB: db},
+		SeriesPresetRepositorier:               &repository_sqlx.SeriesPresetRepository{DB: db},
 		LayoutImageRepositorier:                &repository_sqlx.LayoutImageRepository{DB: db},
 		OverlayStateRepositorier:               &repository_sqlx.OverlayStateRepository{DB: db},
 		BreakCache:                             &breakCache,
@@ -222,6 +223,10 @@ func main() {
 	http.HandleFunc("/api/series/price_ranges/create", routeBuilder.WrapRoute(apiO.SeriesPriceRangeCreate, api.HttpPost, true))
 	http.HandleFunc("/api/series/price_ranges/update", routeBuilder.WrapRoute(apiO.SeriesPriceRangeUpdate, api.HttpPost, true))
 	http.HandleFunc("/api/series/price_ranges/delete", routeBuilder.WrapRoute(apiO.SeriesPriceRangeDelete, api.HttpPost, true))
+	http.HandleFunc("/api/series/price_ranges/reorder", routeBuilder.WrapRoute(apiO.SeriesPriceRangeReorder, api.HttpPost, true))
+	http.HandleFunc("/api/series/preset/list", routeBuilder.WrapRoute(apiO.SeriesPresetList, api.HttpPost, true))
+	http.HandleFunc("/api/series/preset/create", routeBuilder.WrapRoute(apiO.SeriesPresetCreate, api.HttpPost, true))
+	http.HandleFunc("/api/series/preset/delete", routeBuilder.WrapRoute(apiO.SeriesPresetDelete, api.HttpPost, true))
 
 	http.HandleFunc("/api/photo/upload", routeBuilder.WrapRoute(apiO.PhotoUpload, api.HttpPost, true))
 	http.HandleFunc("/api/photo/list", routeBuilder.WrapRoute(apiO.PhotoGetBySeries, api.HttpPost, true))
