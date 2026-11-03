@@ -10,6 +10,7 @@ type Stream struct {
 	IsDeleted     bool      `json:"is_deleted" db:"is_deleted"`
 	IsEnded       bool      `json:"is_ended" db:"is_ended"`
 	ActiveBreakId *int64    `json:"active_break_id" db:"active_break_id"`
+	WhatnotShowId *string   `json:"whatnot_show_id" db:"whatnot_show_id"`
 }
 
 type StreamStatistic struct {

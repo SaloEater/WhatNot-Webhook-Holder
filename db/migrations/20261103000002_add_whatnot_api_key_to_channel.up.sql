@@ -1,0 +1,1 @@
+ALTER TABLE channel ADD COLUMN whatnot_api_key VARCHAR(255) NOT NULL DEFAULT '';

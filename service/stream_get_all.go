@@ -7,10 +7,11 @@ type GetChannelStreamsRequest struct {
 }
 
 type GetStreamResponse struct {
-	Id        int64  `json:"id"`
-	Name      string `json:"name"`
-	CreatedAt int64  `json:"created_at"`
-	IsEnded   bool   `json:"is_ended"`
+	Id            int64   `json:"id"`
+	Name          string  `json:"name"`
+	CreatedAt     int64   `json:"created_at"`
+	IsEnded       bool    `json:"is_ended"`
+	WhatnotShowId *string `json:"whatnot_show_id"`
 }
 
 type GetChannelStreamsResponse struct {
@@ -48,6 +49,7 @@ func (s *Service) GetChannelStreams(r *GetChannelStreamsRequest) (*GetChannelStr
 		streamResponse.CreatedAt = stream.CreatedAt.UnixMilli()
 		streamResponse.Name = stream.Name
 		streamResponse.IsEnded = stream.IsEnded
+		streamResponse.WhatnotShowId = stream.WhatnotShowId
 		streamResponses[i] = &streamResponse
 	}
 

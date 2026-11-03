@@ -42,8 +42,9 @@ func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
 	}()
 
 	return &AddStreamResponse{GetStreamResponse: GetStreamResponse{
-		Id:        stream.Id,
-		Name:      stream.Name,
-		CreatedAt: stream.CreatedAt.UnixMilli(),
+		Id:            stream.Id,
+		Name:          stream.Name,
+		CreatedAt:     stream.CreatedAt.UnixMilli(),
+		WhatnotShowId: stream.WhatnotShowId,
 	}}, nil
 }

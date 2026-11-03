@@ -60,7 +60,8 @@ func (r *StreamRepository) Update(day *entity.Stream) error {
 	  	name = :name,
 		created_at = :created_at,
 		is_ended = :is_ended,
-		active_break_id = :active_break_id
+		active_break_id = :active_break_id,
+		whatnot_show_id = :whatnot_show_id
 	WHERE id = :id`, day)
 
 	return err

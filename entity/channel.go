@@ -7,4 +7,5 @@ type Channel struct {
 	ActiveStreamId      *int64 `json:"active_stream_id" db:"active_stream_id"`
 	DefaultHighBidTeam  string `json:"default_high_bid_team" db:"default_high_bid_team"`
 	DefaultHighBidFloor int    `json:"default_high_bid_floor" db:"default_high_bid_floor"`
+	WhatnotApiKey       string `json:"-" db:"whatnot_api_key"`
 }

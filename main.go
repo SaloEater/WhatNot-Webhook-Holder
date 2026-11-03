@@ -170,6 +170,9 @@ func main() {
 
 	http.HandleFunc("/api/channel/set_active_stream", routeBuilder.WrapRoute(apiO.SetActiveStream, api.HttpPost, true))
 	http.HandleFunc("/api/stream/set_active_break", routeBuilder.WrapRoute(apiO.SetActiveBreak, api.HttpPost, true))
+	http.HandleFunc("/api/whatnot/shows", routeBuilder.WrapRoute(apiO.WhatnotShowsList, api.HttpPost, true))
+	http.HandleFunc("/api/stream/set_whatnot_show", routeBuilder.WrapRoute(apiO.SetStreamWhatnotShow, api.HttpPost, true))
+	http.HandleFunc("/api/stream/whatnot_orders", routeBuilder.WrapRoute(apiO.StreamWhatnotOrders, api.HttpPost, true))
 
 	http.HandleFunc("/api/stream/breaks", routeBuilder.WrapRoute(apiO.GetStreamBreaks, api.HttpPost, true))
 	http.HandleFunc("/api/break", routeBuilder.WrapRoute(apiO.GetBreak, api.HttpPost, true))
