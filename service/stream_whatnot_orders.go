@@ -107,7 +107,7 @@ func (s *Service) StreamWhatnotOrders(r *StreamWhatnotOrdersRequest) (*StreamWha
 	if show.ScheduledStartAt != nil {
 		notBefore = show.ScheduledStartAt.Add(-3 * time.Hour)
 	}
-	orders, err := client.ListOrdersForShow(show.Id, notBefore, 60)
+	orders, err := client.ListOrdersForShow(show.Id, notBefore)
 	if err != nil {
 		return nil, err
 	}

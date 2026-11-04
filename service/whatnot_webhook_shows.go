@@ -47,6 +47,6 @@ func (s *Service) onWhatnotShowEnded(ev *entity.WhatnotWebhookEvent, data json.R
 	if err := s.EventStreamEnded(&EventStreamEndedRequest{StreamID: stream.Id}); err != nil {
 		fmt.Println(fmt.Sprintf("whatnot webhook: stream %d: event stream ended: %s", stream.Id, err.Error()))
 	}
-	_, err = s.RunShowReconciliation(stream.Id, "webhook")
+	_, err = s.RunShowReconciliation(stream.Id, "webhook", false)
 	return err
 }

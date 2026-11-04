@@ -54,8 +54,21 @@ type ReconExtraGiveaway struct {
 	EventId  int64  `json:"event_id"`
 }
 
+// ReconGiveawayItem is one Whatnot giveaway order and where this run placed it.
+type ReconGiveawayItem struct {
+	OrderId   string `json:"order_id"`
+	Title     string `json:"title"`
+	Username  string `json:"username"`
+	CreatedAt string `json:"created_at"`
+	BreakId   int64  `json:"break_id"` // 0 when unplaced
+	BreakName string `json:"break_name"`
+	PlacedBy  string `json:"placed_by"` // auto | manual | none
+	Status    string `json:"status"`    // matched | missing | unplaced
+}
+
 type ReconGiveaways struct {
 	ToAdd    int                  `json:"to_add"`
+	Items    []ReconGiveawayItem  `json:"items"`
 	Unplaced []ReconUnplaced      `json:"unplaced"`
 	Extra    []ReconExtraGiveaway `json:"extra"`
 }
@@ -82,8 +95,9 @@ type reconWrite struct {
 
 // RunShowReconciliation compares the Whatnot orders of the stream's show with the stream's events.
 // Error handling: a failed run still leaves a finished row (status failed); it is returned together
-// with the error.
-func (s *Service) RunShowReconciliation(streamId int64, trigger string) (*entity.ShowReconciliation, error) {
+// with the error. A dry run only stores its report on the reconciliation row: events and the stream
+// status stay untouched.
+func (s *Service) RunShowReconciliation(streamId int64, trigger string, dryRun bool) (*entity.ShowReconciliation, error) {
 	stream, err := s.StreamRepositorier.Get(streamId)
 	if err != nil {
 		return nil, err
@@ -100,7 +114,7 @@ func (s *Service) RunShowReconciliation(streamId int64, trigger string) (*entity
 		return s.GetReconciliationByStream(streamId, *stream.WhatnotShowId)
 	}
 
-	status, report, runErr := s.safeReconcile(id, stream)
+	status, report, runErr := s.safeReconcile(id, stream, dryRun)
 	errMsg := ""
 	if runErr != nil {
 		status = entity.ReconciliationStatusFailed
@@ -126,16 +140,16 @@ func (s *Service) RunShowReconciliation(streamId int64, trigger string) (*entity
 	return row, runErr
 }
 
-func (s *Service) safeReconcile(id int64, stream *entity.Stream) (status string, report *ReconReport, err error) {
+func (s *Service) safeReconcile(id int64, stream *entity.Stream, dryRun bool) (status string, report *ReconReport, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("panic: %v", r)
 		}
 	}()
-	return s.reconcile(id, stream)
+	return s.reconcile(id, stream, dryRun)
 }
 
-func (s *Service) reconcile(id int64, stream *entity.Stream) (string, *ReconReport, error) {
+func (s *Service) reconcile(id int64, stream *entity.Stream, dryRun bool) (string, *ReconReport, error) {
 	row, err := s.GetReconciliation(id)
 	if err != nil {
 		return "", nil, err
@@ -181,7 +195,7 @@ func (s *Service) reconcile(id int64, stream *entity.Stream) (string, *ReconRepo
 		Show:          ReconReportShow{Id: orders.Show.Id, Title: orders.Show.Title},
 		OrdersScanned: orders.OrdersScanned,
 		Breaks:        make([]ReconBreak, len(orders.Breaks)),
-		Giveaways:     ReconGiveaways{Unplaced: []ReconUnplaced{}, Extra: []ReconExtraGiveaway{}},
+		Giveaways:     ReconGiveaways{Items: []ReconGiveawayItem{}, Unplaced: []ReconUnplaced{}, Extra: []ReconExtraGiveaway{}},
 		Unparsed:      make([]ReconUnparsed, len(orders.Unparsed)),
 	}
 	for i, u := range orders.Unparsed {
@@ -276,9 +290,18 @@ func (s *Service) reconcile(id int64, stream *entity.Stream) (string, *ReconRepo
 	}
 	placement := reconciliation.BucketGiveaways(teamOrders, gws, others)
 	placedByBreak := map[int64][]reconciliation.Giveaway{}
+	breakNames := map[int64]string{}
+	for _, b := range dbBreaks {
+		breakNames[b.Id] = b.Name
+	}
+	items := make([]ReconGiveawayItem, len(gws))
+	itemByOrder := map[string]*ReconGiveawayItem{}
 	for i, g := range gws {
+		items[i] = ReconGiveawayItem{OrderId: g.OrderId, Title: g.Title, Username: g.Username, CreatedAt: orders.Giveaways[i].CreatedAt, PlacedBy: "none", Status: "unplaced"}
+		itemByOrder[g.OrderId] = &items[i]
 		if over, has := manual.Giveaways[g.OrderId]; has && knownBreak[over] {
 			placedByBreak[over] = append(placedByBreak[over], g)
+			items[i].BreakId, items[i].BreakName, items[i].PlacedBy, items[i].Status = over, breakNames[over], "manual", "matched"
 			continue
 		}
 		breakId, ok := wnToBreak[placement[i]]
@@ -288,6 +311,7 @@ func (s *Service) reconcile(id int64, stream *entity.Stream) (string, *ReconRepo
 			continue
 		}
 		placedByBreak[breakId] = append(placedByBreak[breakId], g)
+		items[i].BreakId, items[i].BreakName, items[i].PlacedBy, items[i].Status = breakId, breakNames[breakId], "auto", "matched"
 	}
 	for _, b := range dbBreaks {
 		evs := make([]reconciliation.Event, 0)
@@ -301,6 +325,7 @@ func (s *Service) reconcile(id int64, stream *entity.Stream) (string, *ReconRepo
 			report.Giveaways.Extra = append(report.Giveaways.Extra, ReconExtraGiveaway{BreakId: b.Id, Customer: e.Customer, EventId: e.Id})
 		}
 		for _, g := range diff.Missing {
+			itemByOrder[g.OrderId].Status = "missing"
 			gt := entity.GiveawayType(entity.GiveawayTypePack)
 			if reconciliation.IsSlabTitle(g.Title) {
 				gt = entity.GiveawayType(entity.GiveawayTypeSlab)
@@ -313,9 +338,15 @@ func (s *Service) reconcile(id int64, stream *entity.Stream) (string, *ReconRepo
 		}
 	}
 
+	sort.SliceStable(items, func(a, b int) bool { return parseOrderTime(items[a].CreatedAt).Before(parseOrderTime(items[b].CreatedAt)) })
+	report.Giveaways.Items = items
+
 	// ---- decide ----
 	if report.Blocking > 0 {
 		return entity.ReconciliationStatusNeedsManual, report, nil
+	}
+	if dryRun {
+		return entity.ReconciliationStatusDryRun, report, nil
 	}
 
 	// ---- apply, one transaction ----

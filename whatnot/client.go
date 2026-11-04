@@ -108,37 +108,52 @@ func (c *Client) get(path string, q url.Values, out any) error {
 	}
 }
 
+// ListShowsPage fetches one page of /shows and returns the cursor of the next page ("" when there is none).
+func (c *Client) ListShowsPage(status, cursor string, pageSize int) ([]Show, string, error) {
+	q := url.Values{}
+	q.Set("status", status)
+	q.Set("limit", strconv.Itoa(pageSize))
+	if cursor != "" {
+		q.Set("cursor", cursor)
+	}
+	var resp struct {
+		Data       []Show  `json:"data"`
+		NextCursor *string `json:"next_cursor"`
+	}
+	if err := c.get("/shows", q, &resp); err != nil {
+		return nil, "", err
+	}
+	if resp.NextCursor == nil {
+		return resp.Data, "", nil
+	}
+	return resp.Data, *resp.NextCursor, nil
+}
+
 // ListShowsSince walks /shows newest-first in pages of pageSize, keeping shows until one starts before
 // since. A zero since keeps everything. maxPages only guards against an endless cursor walk.
-func (c *Client) ListShowsSince(status string, since time.Time, pageSize, maxPages int) ([]Show, error) {
-	var shows []Show
+//
+// When hasMore is true, resumeCursor is where older shows continue. If the walk stopped at since, that is
+// the cursor of the page it stopped on, because the rest of that page hasn't been returned yet. Resuming
+// therefore repeats the newer shows of that page, and the cursor is "" if it stopped on the first page.
+func (c *Client) ListShowsSince(status string, since time.Time, pageSize, maxPages int) (shows []Show, resumeCursor string, hasMore bool, err error) {
 	cursor := ""
 	for page := 0; page < maxPages; page++ {
-		q := url.Values{}
-		q.Set("status", status)
-		q.Set("limit", strconv.Itoa(pageSize))
-		if cursor != "" {
-			q.Set("cursor", cursor)
+		data, next, err := c.ListShowsPage(status, cursor, pageSize)
+		if err != nil {
+			return nil, "", false, err
 		}
-		var resp struct {
-			Data       []Show  `json:"data"`
-			NextCursor *string `json:"next_cursor"`
-		}
-		if err := c.get("/shows", q, &resp); err != nil {
-			return nil, err
-		}
-		for _, sh := range resp.Data {
+		for _, sh := range data {
 			if !since.IsZero() && sh.ScheduledStartAt != nil && sh.ScheduledStartAt.Before(since) {
-				return shows, nil
+				return shows, cursor, true, nil
 			}
 			shows = append(shows, sh)
 		}
-		if resp.NextCursor == nil || *resp.NextCursor == "" {
-			break
+		if next == "" {
+			return shows, "", false, nil
 		}
-		cursor = *resp.NextCursor
+		cursor = next
 	}
-	return shows, nil
+	return shows, cursor, true, nil
 }
 
 func (c *Client) GetShow(id string) (*Show, error) {
@@ -149,10 +164,12 @@ func (c *Client) GetShow(id string) (*Show, error) {
 	return &show, nil
 }
 
-func (c *Client) ListOrdersForShow(showId string, notBefore time.Time, maxPages int) ([]Order, error) {
+// ListOrdersForShow walks the seller's orders newest-first and keeps the ones of the show. There is no page
+// limit: the walk ends at notBefore or at the last page, so an old show takes longer but is never cut short.
+func (c *Client) ListOrdersForShow(showId string, notBefore time.Time) ([]Order, error) {
 	var orders []Order
 	cursor := ""
-	for page := 0; page < maxPages; page++ {
+	for {
 		q := url.Values{}
 		q.Set("limit", "50")
 		if cursor != "" {
@@ -196,14 +213,13 @@ func (c *Client) ListOrdersForShow(showId string, notBefore time.Time, maxPages 
 			})
 		}
 		if !oldest.IsZero() && oldest.Before(notBefore) {
-			break
+			return orders, nil
 		}
-		if resp.NextCursor == nil || *resp.NextCursor == "" {
-			break
+		if len(resp.Data) == 0 || resp.NextCursor == nil || *resp.NextCursor == "" {
+			return orders, nil
 		}
 		cursor = *resp.NextCursor
 	}
-	return orders, nil
 }
 
 func (c *Client) ListOrderItems(orderId string) ([]OrderItem, error) {

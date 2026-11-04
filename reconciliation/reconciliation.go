@@ -6,13 +6,11 @@ import (
 	"math"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
 
 const (
-	MatchedByName   = "name"
 	MatchedByNumber = "number"
 	MatchedByNone   = "none"
 	MatchedByManual = "manual"
@@ -37,22 +35,19 @@ type DBBreak struct {
 type BreakMatch struct {
 	BreakId   int64 // 0 when not matched
 	BreakName string
-	By        string // name | number | none
+	By        string // number | none | manual | skipped
 }
 
-var digits = regexp.MustCompile(`\d+`)
+var breakPhrase = regexp.MustCompile(`(?i)\bbreak\s+0*(\d+)\b`)
 
-// lastNumber returns the last integer in the name ("03" -> "3"), ok=false when there is none.
-func lastNumber(name string) (string, bool) {
-	all := digits.FindAllString(name, -1)
-	if len(all) == 0 {
+// breakNumber returns N from the first "Break N" in the name ("Break 03 Titans 3" -> "3"), ok=false when
+// the phrase is absent. Other numbers in the name are ignored.
+func breakNumber(name string) (string, bool) {
+	m := breakPhrase.FindStringSubmatch(name)
+	if m == nil {
 		return "", false
 	}
-	n, err := strconv.Atoi(all[len(all)-1])
-	if err != nil {
-		return "", false
-	}
-	return strconv.Itoa(n), true
+	return m[1], true
 }
 
 // SkipBreak is the manual-map value for a Whatnot break the human chose to skip.
@@ -95,47 +90,31 @@ func MatchBreaksWithOverrides(wnNames []string, dbBreaks []DBBreak, overrides ma
 	return out
 }
 
-// MatchBreaks maps every Whatnot break name to a DB break: pass 1 exact name (case-insensitive,
-// trimmed, each DB break used once); pass 2 last number in the name when exactly one unused DB break
-// carries that number. The result is aligned with wnNames.
+// MatchBreaks maps every Whatnot break name to a DB break by the "Break N" phrase in both names. A number
+// carried by more than one Whatnot name or more than one DB break stays unmatched for a human to resolve,
+// because a wrong guess would write fixes to the wrong break. The result is aligned with wnNames.
 func MatchBreaks(wnNames []string, dbBreaks []DBBreak) []BreakMatch {
+	wnCount := map[string]int{}
+	for _, name := range wnNames {
+		if n, ok := breakNumber(name); ok {
+			wnCount[n]++
+		}
+	}
+	dbByNumber := map[string][]DBBreak{}
+	for _, b := range dbBreaks {
+		if n, ok := breakNumber(b.Name); ok {
+			dbByNumber[n] = append(dbByNumber[n], b)
+		}
+	}
 	out := make([]BreakMatch, len(wnNames))
-	used := make([]bool, len(dbBreaks))
-	for i := range out {
+	for i, name := range wnNames {
 		out[i].By = MatchedByNone
-	}
-	for i, name := range wnNames {
-		for j, b := range dbBreaks {
-			if !used[j] && Norm(b.Name) == Norm(name) {
-				used[j] = true
-				out[i] = BreakMatch{BreakId: b.Id, BreakName: b.Name, By: MatchedByName}
-				break
-			}
-		}
-	}
-	for i, name := range wnNames {
-		if out[i].By != MatchedByNone {
+		n, ok := breakNumber(name)
+		if !ok || wnCount[n] != 1 || len(dbByNumber[n]) != 1 {
 			continue
 		}
-		n, ok := lastNumber(name)
-		if !ok {
-			continue
-		}
-		cand := -1
-		count := 0
-		for j, b := range dbBreaks {
-			if used[j] {
-				continue
-			}
-			if bn, ok := lastNumber(b.Name); ok && bn == n {
-				cand = j
-				count++
-			}
-		}
-		if count == 1 {
-			used[cand] = true
-			out[i] = BreakMatch{BreakId: dbBreaks[cand].Id, BreakName: dbBreaks[cand].Name, By: MatchedByNumber}
-		}
+		b := dbByNumber[n][0]
+		out[i] = BreakMatch{BreakId: b.Id, BreakName: b.Name, By: MatchedByNumber}
 	}
 	return out
 }
@@ -233,7 +212,11 @@ type Giveaway struct {
 }
 
 // BucketGiveaways returns, aligned with giveaways, the Whatnot break name each giveaway belongs to
-// ("" when there is no team order at all). Timeline = team orders + giveaways + other timestamps
+// ("" when there is no team order at all), going by the nearest team orders around it. Between two orders
+// of the same break, it's that break. Between orders of two breaks, the timestamp decides: more than
+// GiveawayGap after the last order means the next break, otherwise the previous one. With an order on only
+// one side, it's that order's break.
+// Timeline = team orders + giveaways + other timestamps
 // (unparsed orders, which are neither before nor after anchors); sorted by time, stable.
 // gap(last team order before) > GiveawayGap and a team order exists after -> the one after, else
 // the one before (else the one after).

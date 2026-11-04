@@ -10,6 +10,7 @@ const (
 	ReconciliationStatusApplied     = "applied"
 	ReconciliationStatusNeedsManual = "needs_manual"
 	ReconciliationStatusFailed      = "failed"
+	ReconciliationStatusDryRun      = "dry_run" // report only: no blocking issues, nothing was changed
 )
 
 type ShowReconciliation struct {

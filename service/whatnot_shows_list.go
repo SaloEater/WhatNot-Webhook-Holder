@@ -3,6 +3,8 @@ package service
 import (
 	"errors"
 	"time"
+
+	"github.com/SaloEater/WhatNot-Webhook-Holder/whatnot"
 )
 
 const (
@@ -14,6 +16,9 @@ const (
 type WhatnotShowsListRequest struct {
 	ChannelId int64  `json:"channel_id"`
 	Status    string `json:"status"`
+	// Older fetches a single page from Cursor with no date cutoff, to reach shows past the lookback.
+	Older  bool   `json:"older"`
+	Cursor string `json:"cursor"`
 }
 
 type WhatnotShow struct {
@@ -25,7 +30,9 @@ type WhatnotShow struct {
 }
 
 type WhatnotShowsListResponse struct {
-	Shows []WhatnotShow `json:"shows"`
+	Shows      []WhatnotShow `json:"shows"`
+	NextCursor string        `json:"next_cursor"`
+	HasMore    bool          `json:"has_more"`
 }
 
 func (s *Service) WhatnotShowsList(r *WhatnotShowsListRequest) (*WhatnotShowsListResponse, error) {
@@ -40,16 +47,24 @@ func (s *Service) WhatnotShowsList(r *WhatnotShowsListRequest) (*WhatnotShowsLis
 	if status == "" {
 		status = "live"
 	}
-	// Only recent and upcoming shows are selectable. A live show is always kept, whatever its start date.
-	since := time.Now().Add(-whatnotShowsLookback)
-	if status == "live" {
-		since = time.Time{}
+	var shows []whatnot.Show
+	var nextCursor string
+	var hasMore bool
+	if r.Older {
+		shows, nextCursor, err = client.ListShowsPage(status, r.Cursor, whatnotShowsPageSize)
+		hasMore = nextCursor != ""
+	} else {
+		// By default only recent and upcoming shows are listed. A live show is always kept, whatever its start date.
+		since := time.Now().Add(-whatnotShowsLookback)
+		if status == "live" {
+			since = time.Time{}
+		}
+		shows, nextCursor, hasMore, err = client.ListShowsSince(status, since, whatnotShowsPageSize, whatnotShowsMaxPages)
 	}
-	shows, err := client.ListShowsSince(status, since, whatnotShowsPageSize, whatnotShowsMaxPages)
 	if err != nil {
 		return nil, err
 	}
-	resp := &WhatnotShowsListResponse{Shows: make([]WhatnotShow, len(shows))}
+	resp := &WhatnotShowsListResponse{Shows: make([]WhatnotShow, len(shows)), NextCursor: nextCursor, HasMore: hasMore}
 	for i, sh := range shows {
 		resp.Shows[i] = WhatnotShow{Id: sh.Id, Title: sh.Title, Status: sh.Status, ScheduledStartAt: sh.ScheduledStartAt, EndedAt: sh.EndedAt}
 	}
