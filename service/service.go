@@ -35,6 +35,8 @@ type Service struct {
 	repository.SeriesPresetRepositorier
 	repository.LayoutImageRepositorier
 	repository.OverlayStateRepositorier
+	repository.WhatnotWebhookEventRepositorier
+	repository.ShowReconciliationRepositorier
 	BreakCache                   cacheInterface.Cache[*entity.Break]
 	StreamCache                  cacheInterface.Cache[*entity.Stream]
 	ChannelCache                 cacheInterface.Cache[*entity.Channel]

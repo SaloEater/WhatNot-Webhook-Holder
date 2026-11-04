@@ -8,4 +8,6 @@ type Channel struct {
 	DefaultHighBidTeam  string `json:"default_high_bid_team" db:"default_high_bid_team"`
 	DefaultHighBidFloor int    `json:"default_high_bid_floor" db:"default_high_bid_floor"`
 	WhatnotApiKey       string `json:"-" db:"whatnot_api_key"`
+	// WhatnotWebhookSecret is DB-only (never serialized, never written by ChannelRepository.Update).
+	WhatnotWebhookSecret string `json:"-" db:"whatnot_webhook_secret"`
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"sort"
 	"strings"
@@ -9,6 +10,8 @@ import (
 
 type StreamWhatnotOrdersRequest struct {
 	StreamId int64 `json:"stream_id"`
+	// ReconciliationId, when set, returns that run's stored snapshot instead of calling Whatnot.
+	ReconciliationId int64 `json:"reconciliation_id"`
 }
 
 type WhatnotBreakOrder struct {
@@ -55,6 +58,36 @@ type ordersBreakGroup struct {
 }
 
 func (s *Service) StreamWhatnotOrders(r *StreamWhatnotOrdersRequest) (*StreamWhatnotOrdersResponse, error) {
+	if r.ReconciliationId != 0 {
+		row, err := s.GetReconciliation(r.ReconciliationId)
+		if err != nil {
+			return nil, err
+		}
+		if row.StreamId != r.StreamId {
+			return nil, errors.New("reconciliation belongs to another stream")
+		}
+		stream, err := s.StreamRepositorier.Get(r.StreamId)
+		if err != nil {
+			return nil, err
+		}
+		if stream.WhatnotShowId == nil || *stream.WhatnotShowId != row.ShowId {
+			return nil, errors.New("reconciliation belongs to a different show than the one linked to this stream")
+		}
+		snapshot := &StreamWhatnotOrdersResponse{}
+		if err := json.Unmarshal(row.Orders, snapshot); err != nil {
+			return nil, err
+		}
+		if snapshot.Breaks == nil {
+			snapshot.Breaks = []WhatnotBreakOrders{}
+		}
+		if snapshot.Giveaways == nil {
+			snapshot.Giveaways = []WhatnotGiveawayOrder{}
+		}
+		if snapshot.Unparsed == nil {
+			snapshot.Unparsed = []WhatnotUnparsedOrder{}
+		}
+		return snapshot, nil
+	}
 	stream, err := s.StreamRepositorier.Get(r.StreamId)
 	if err != nil {
 		return nil, err

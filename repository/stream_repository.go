@@ -14,4 +14,5 @@ type StreamRepositorier interface {
 	GetEnriched(int64) (*entity.StreamEnriched, error)
 	GetByChannelIdPaginated(channelId int64, limit int64, offset int64) ([]*entity.Stream, error)
 	CountByChannelId(channelId int64) (int64, error)
+	GetByWhatnotShowId(channelId int64, showId string) (*entity.Stream, error)
 }

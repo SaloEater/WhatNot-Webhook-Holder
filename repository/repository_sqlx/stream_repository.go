@@ -1,6 +1,8 @@
 package repository_sqlx
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/jmoiron/sqlx"
@@ -61,7 +63,9 @@ func (r *StreamRepository) Update(day *entity.Stream) error {
 		created_at = :created_at,
 		is_ended = :is_ended,
 		active_break_id = :active_break_id,
-		whatnot_show_id = :whatnot_show_id
+		whatnot_show_id = :whatnot_show_id,
+		whatnot_show_name = :whatnot_show_name,
+		status = :status
 	WHERE id = :id`, day)
 
 	return err
@@ -158,4 +162,13 @@ func (r *StreamRepository) GetEnriched(id int64) (*entity.StreamEnriched, error)
 	`, id)
 
 	return &enriched, err
+}
+
+func (r *StreamRepository) GetByWhatnotShowId(channelId int64, showId string) (*entity.Stream, error) {
+	var stream entity.Stream
+	err := r.DB.Unsafe().Get(&stream, `SELECT * FROM stream WHERE channel_id = $1 AND whatnot_show_id = $2 AND is_deleted = false ORDER BY id DESC LIMIT 1`, channelId, showId)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return &stream, err
 }

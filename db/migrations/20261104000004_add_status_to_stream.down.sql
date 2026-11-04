@@ -1,0 +1,1 @@
+ALTER TABLE stream DROP COLUMN status;

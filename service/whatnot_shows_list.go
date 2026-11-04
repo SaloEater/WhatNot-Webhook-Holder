@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+const (
+	whatnotShowsLookback = 48 * time.Hour
+	whatnotShowsPageSize = 20
+	whatnotShowsMaxPages = 25
+)
+
 type WhatnotShowsListRequest struct {
 	ChannelId int64  `json:"channel_id"`
 	Status    string `json:"status"`
@@ -34,7 +40,12 @@ func (s *Service) WhatnotShowsList(r *WhatnotShowsListRequest) (*WhatnotShowsLis
 	if status == "" {
 		status = "live"
 	}
-	shows, err := client.ListShows(status, 2)
+	// Only recent and upcoming shows are selectable. A live show is always kept, whatever its start date.
+	since := time.Now().Add(-whatnotShowsLookback)
+	if status == "live" {
+		since = time.Time{}
+	}
+	shows, err := client.ListShowsSince(status, since, whatnotShowsPageSize, whatnotShowsMaxPages)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,8 @@ package service
 
 import (
 	"fmt"
-	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
+
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/pkg/errors"
 )
 
@@ -13,13 +14,18 @@ type EventStreamEndedRequest struct {
 func (s *Service) EventStreamEnded(r *EventStreamEndedRequest) error {
 	stream, err := s.StreamRepositorier.GetEnriched(r.StreamID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("get enriched stream %d", r.StreamID))
 	}
 
-	stream.IsEnded = true
-	err = s.StreamRepositorier.Update(stream.Stream)
-	key := cache.IdToKey(stream.Id)
-	s.StreamCache.Set(key, stream.Stream)
+	// Idempotent: a webhook retry or manual-then-webhook must not repeat the shipment move / TG message.
+	if stream.IsEnded {
+		return nil
+	}
+
+	err = s.SetStreamStatus(stream.Stream, entity.StreamStatusEnded)
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("set stream %d status to ended", r.StreamID))
+	}
 
 	go func() {
 		err := s.MoveStreamShipmentToStatus(stream.Id, StreamShipmentStatusAwaitsLabeling)
@@ -30,12 +36,12 @@ func (s *Service) EventStreamEnded(r *EventStreamEndedRequest) error {
 
 	tgchats, err := s.TGChatRepositorier.GetAllActive()
 	if err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("get all active tgchats for stream %d", r.StreamID))
 	}
 
 	streamStats, err := s.StreamRepositorier.GetStats(r.StreamID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("get stream %d stats", r.StreamID))
 	}
 	if streamStats == nil {
 		return fmt.Errorf("stream not found")

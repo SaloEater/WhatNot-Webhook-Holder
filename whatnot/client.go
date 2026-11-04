@@ -108,13 +108,15 @@ func (c *Client) get(path string, q url.Values, out any) error {
 	}
 }
 
-func (c *Client) ListShows(status string, maxPages int) ([]Show, error) {
+// ListShowsSince walks /shows newest-first in pages of pageSize, keeping shows until one starts before
+// since. A zero since keeps everything. maxPages only guards against an endless cursor walk.
+func (c *Client) ListShowsSince(status string, since time.Time, pageSize, maxPages int) ([]Show, error) {
 	var shows []Show
 	cursor := ""
 	for page := 0; page < maxPages; page++ {
 		q := url.Values{}
 		q.Set("status", status)
-		q.Set("limit", "50")
+		q.Set("limit", strconv.Itoa(pageSize))
 		if cursor != "" {
 			q.Set("cursor", cursor)
 		}
@@ -125,7 +127,12 @@ func (c *Client) ListShows(status string, maxPages int) ([]Show, error) {
 		if err := c.get("/shows", q, &resp); err != nil {
 			return nil, err
 		}
-		shows = append(shows, resp.Data...)
+		for _, sh := range resp.Data {
+			if !since.IsZero() && sh.ScheduledStartAt != nil && sh.ScheduledStartAt.Before(since) {
+				return shows, nil
+			}
+			shows = append(shows, sh)
+		}
 		if resp.NextCursor == nil || *resp.NextCursor == "" {
 			break
 		}

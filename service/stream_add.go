@@ -46,5 +46,6 @@ func (s *Service) AddStream(r *AddStreamRequest) (*AddStreamResponse, error) {
 		Name:          stream.Name,
 		CreatedAt:     stream.CreatedAt.UnixMilli(),
 		WhatnotShowId: stream.WhatnotShowId,
+		Status:        entity.StreamStatusPlanned,
 	}}, nil
 }

@@ -1,0 +1,354 @@
+package service
+
+import (
+	"encoding/json"
+	"fmt"
+	"sort"
+	"time"
+
+	"github.com/SaloEater/WhatNot-Webhook-Holder/cache"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/reconciliation"
+)
+
+const reconciliationRunningTTL = 10 * time.Minute
+
+type ReconReportShow struct {
+	Id    string `json:"id"`
+	Title string `json:"title"`
+}
+
+type ReconToAdd struct {
+	Team     string  `json:"team"`
+	Username string  `json:"username"`
+	Price    float64 `json:"price"`
+}
+
+type ReconExtraTeam struct {
+	Team     string `json:"team"`
+	Customer string `json:"customer"`
+	EventId  int64  `json:"event_id"`
+}
+
+type ReconBreak struct {
+	WnName     string           `json:"wn_name"`
+	BreakId    int64            `json:"break_id"`
+	BreakName  string           `json:"break_name"`
+	MatchedBy  string           `json:"matched_by"`
+	Matched    int              `json:"matched"`
+	ToFix      int              `json:"to_fix"`
+	ToFixPrice int              `json:"to_fix_price"`
+	ToAdd      []ReconToAdd     `json:"to_add"` // orders with no free event, added to the break as new events
+	Extra      []ReconExtraTeam `json:"extra"`
+}
+
+type ReconUnplaced struct {
+	OrderId  string `json:"order_id"`
+	Title    string `json:"title"`
+	Username string `json:"username"`
+}
+
+type ReconExtraGiveaway struct {
+	BreakId  int64  `json:"break_id"`
+	Customer string `json:"customer"`
+	EventId  int64  `json:"event_id"`
+}
+
+type ReconGiveaways struct {
+	ToAdd    int                  `json:"to_add"`
+	Unplaced []ReconUnplaced      `json:"unplaced"`
+	Extra    []ReconExtraGiveaway `json:"extra"`
+}
+
+type ReconUnparsed struct {
+	Title    string `json:"title"`
+	Username string `json:"username"`
+}
+
+type ReconReport struct {
+	Show          ReconReportShow `json:"show"`
+	OrdersScanned int             `json:"orders_scanned"`
+	Blocking      int             `json:"blocking"`
+	Breaks        []ReconBreak    `json:"breaks"`
+	Giveaways     ReconGiveaways  `json:"giveaways"`
+	Unparsed      []ReconUnparsed `json:"unparsed"`
+}
+
+// reconWrite is one planned DB write, computed during the dry run.
+type reconWrite struct {
+	update *entity.Event // existing event with customer/price replaced
+	create *entity.Event // new giveaway event
+}
+
+// RunShowReconciliation compares the Whatnot orders of the stream's show with the stream's events.
+// Error handling: a failed run still leaves a finished row (status failed); it is returned together
+// with the error.
+func (s *Service) RunShowReconciliation(streamId int64, trigger string) (*entity.ShowReconciliation, error) {
+	stream, err := s.StreamRepositorier.Get(streamId)
+	if err != nil {
+		return nil, err
+	}
+	if stream.WhatnotShowId == nil || *stream.WhatnotShowId == "" {
+		return nil, fmt.Errorf("stream %d has no whatnot show", streamId)
+	}
+
+	id, started, err := s.StartReconciliation(streamId, *stream.WhatnotShowId, trigger, time.Now().Add(-reconciliationRunningTTL))
+	if err != nil {
+		return nil, err
+	}
+	if !started {
+		return s.GetReconciliationByStream(streamId, *stream.WhatnotShowId)
+	}
+
+	status, report, runErr := s.safeReconcile(id, stream)
+	errMsg := ""
+	if runErr != nil {
+		status = entity.ReconciliationStatusFailed
+		errMsg = runErr.Error()
+	}
+	reportJSON, _ := json.Marshal(report)
+	if report == nil {
+		reportJSON = []byte("{}")
+	}
+	if err := s.FinishReconciliation(id, status, errMsg, reportJSON); err != nil {
+		return nil, err
+	}
+	if status == entity.ReconciliationStatusApplied {
+		if err := s.SetStreamStatus(stream, entity.StreamStatusVerified); err != nil {
+			fmt.Println(fmt.Sprintf("reconciliation %d: set stream %d verified: %s", id, streamId, err.Error()))
+		}
+	}
+	row, err := s.GetReconciliation(id)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(fmt.Sprintf("reconciliation %d (stream %d, %s): %s %s", id, streamId, trigger, status, errMsg))
+	return row, runErr
+}
+
+func (s *Service) safeReconcile(id int64, stream *entity.Stream) (status string, report *ReconReport, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+		}
+	}()
+	return s.reconcile(id, stream)
+}
+
+func (s *Service) reconcile(id int64, stream *entity.Stream) (string, *ReconReport, error) {
+	row, err := s.GetReconciliation(id)
+	if err != nil {
+		return "", nil, err
+	}
+	var manual ReconManualMap
+	if err := json.Unmarshal(row.ManualMap, &manual); err != nil {
+		return "", nil, err
+	}
+
+	orders, err := s.StreamWhatnotOrders(&StreamWhatnotOrdersRequest{StreamId: stream.Id})
+	if err != nil {
+		return "", nil, err
+	}
+	ordersJSON, err := json.Marshal(orders)
+	if err != nil {
+		return "", nil, err
+	}
+	if err := s.SetReconciliationOrders(id, ordersJSON); err != nil {
+		return "", nil, err
+	}
+
+	// Nothing to compare against is not a pass: it must not end as "applied" and verify the stream.
+	if orders.OrdersScanned == 0 {
+		return "", nil, fmt.Errorf("no orders found for show %q (status: %s), nothing to reconcile", orders.Show.Title, orders.Show.Status)
+	}
+
+	dbBreaks, err := s.BreakRepositorier.GetBreaksByStreamId(stream.Id)
+	if err != nil {
+		return "", nil, err
+	}
+	sort.Slice(dbBreaks, func(a, b int) bool { return dbBreaks[a].Id < dbBreaks[b].Id })
+	eventsByBreak := map[int64][]*entity.Event{}
+	for _, b := range dbBreaks {
+		evs, err := s.EventRepositorier.GetAllByBreak(b.Id)
+		if err != nil {
+			return "", nil, err
+		}
+		eventsByBreak[b.Id] = evs
+	}
+
+	// ---- dry run ----
+	report := &ReconReport{
+		Show:          ReconReportShow{Id: orders.Show.Id, Title: orders.Show.Title},
+		OrdersScanned: orders.OrdersScanned,
+		Breaks:        make([]ReconBreak, len(orders.Breaks)),
+		Giveaways:     ReconGiveaways{Unplaced: []ReconUnplaced{}, Extra: []ReconExtraGiveaway{}},
+		Unparsed:      make([]ReconUnparsed, len(orders.Unparsed)),
+	}
+	for i, u := range orders.Unparsed {
+		report.Unparsed[i] = ReconUnparsed{Title: u.Title, Username: u.Username}
+	}
+
+	rb := make([]reconciliation.DBBreak, len(dbBreaks))
+	knownBreak := map[int64]bool{}
+	for i, b := range dbBreaks {
+		rb[i] = reconciliation.DBBreak{Id: b.Id, Name: b.Name}
+		knownBreak[b.Id] = true
+	}
+	wnNames := make([]string, len(orders.Breaks))
+	for i, b := range orders.Breaks {
+		wnNames[i] = b.Name
+	}
+	matches := reconciliation.MatchBreaksWithOverrides(wnNames, rb, manual.Breaks)
+	wnToBreak := map[string]int64{}
+
+	var writes []reconWrite
+	touched := map[int64]bool{}
+	eventById := map[int64]*entity.Event{}
+	for _, evs := range eventsByBreak {
+		for _, e := range evs {
+			eventById[e.Id] = e
+		}
+	}
+
+	for i, wb := range orders.Breaks {
+		m := matches[i]
+		rbk := ReconBreak{WnName: wb.Name, BreakId: m.BreakId, BreakName: m.BreakName, MatchedBy: m.By, ToAdd: []ReconToAdd{}, Extra: []ReconExtraTeam{}}
+		if m.By == reconciliation.MatchedByNone {
+			report.Blocking++
+			report.Breaks[i] = rbk
+			continue
+		}
+		if m.By == reconciliation.MatchedBySkip {
+			report.Breaks[i] = rbk
+			continue
+		}
+		wnToBreak[wb.Name] = m.BreakId
+
+		ords := make([]reconciliation.Order, len(wb.Orders))
+		for j, o := range wb.Orders {
+			ords[j] = reconciliation.Order{OrderId: o.OrderId, Team: o.Team, Username: o.Username, Price: o.Price}
+		}
+		evs := make([]reconciliation.Event, 0, len(eventsByBreak[m.BreakId]))
+		for _, e := range eventsByBreak[m.BreakId] {
+			evs = append(evs, reconciliation.Event{Id: e.Id, Team: e.Team, Customer: e.Customer, Price: float64(e.Price), IsGiveaway: e.IsGiveaway})
+		}
+		res := reconciliation.CompareTeams(ords, evs)
+		rbk.Matched = res.Matched
+		for _, f := range res.Fixes {
+			if f.Status == reconciliation.StatusPriceMismatch {
+				rbk.ToFixPrice++
+			} else {
+				rbk.ToFix++
+			}
+			upd := *eventById[f.Event.Id]
+			upd.Customer = f.Order.Username
+			upd.Price = float32(f.Order.Price)
+			writes = append(writes, reconWrite{update: &upd})
+			touched[m.BreakId] = true
+		}
+		for _, o := range res.ToAdd {
+			rbk.ToAdd = append(rbk.ToAdd, ReconToAdd{Team: o.Team, Username: o.Username, Price: o.Price})
+			writes = append(writes, reconWrite{create: &entity.Event{
+				BreakId: m.BreakId, Customer: o.Username, Price: float32(o.Price), Team: o.Team,
+			}})
+			touched[m.BreakId] = true
+		}
+		for _, e := range res.Extra {
+			rbk.Extra = append(rbk.Extra, ReconExtraTeam{Team: e.Team, Customer: e.Customer, EventId: e.Id})
+		}
+		report.Breaks[i] = rbk
+	}
+
+	// giveaways
+	var teamOrders []reconciliation.TeamOrder
+	for _, wb := range orders.Breaks {
+		for _, o := range wb.Orders {
+			teamOrders = append(teamOrders, reconciliation.TeamOrder{WnBreak: wb.Name, CreatedAt: parseOrderTime(o.CreatedAt)})
+		}
+	}
+	gws := make([]reconciliation.Giveaway, len(orders.Giveaways))
+	for i, g := range orders.Giveaways {
+		gws[i] = reconciliation.Giveaway{OrderId: g.OrderId, Title: g.Title, Username: g.Username, CreatedAt: parseOrderTime(g.CreatedAt)}
+	}
+	var others []time.Time
+	for _, u := range orders.Unparsed {
+		others = append(others, parseOrderTime(u.CreatedAt))
+	}
+	placement := reconciliation.BucketGiveaways(teamOrders, gws, others)
+	placedByBreak := map[int64][]reconciliation.Giveaway{}
+	for i, g := range gws {
+		if over, has := manual.Giveaways[g.OrderId]; has && knownBreak[over] {
+			placedByBreak[over] = append(placedByBreak[over], g)
+			continue
+		}
+		breakId, ok := wnToBreak[placement[i]]
+		if placement[i] == "" || !ok {
+			report.Giveaways.Unplaced = append(report.Giveaways.Unplaced, ReconUnplaced{OrderId: g.OrderId, Title: g.Title, Username: g.Username})
+			report.Blocking++
+			continue
+		}
+		placedByBreak[breakId] = append(placedByBreak[breakId], g)
+	}
+	for _, b := range dbBreaks {
+		evs := make([]reconciliation.Event, 0)
+		for _, e := range eventsByBreak[b.Id] {
+			if e.IsGiveaway {
+				evs = append(evs, reconciliation.Event{Id: e.Id, Customer: e.Customer, IsGiveaway: true})
+			}
+		}
+		diff := reconciliation.DiffGiveaways(placedByBreak[b.Id], evs)
+		for _, e := range diff.Extra {
+			report.Giveaways.Extra = append(report.Giveaways.Extra, ReconExtraGiveaway{BreakId: b.Id, Customer: e.Customer, EventId: e.Id})
+		}
+		for _, g := range diff.Missing {
+			gt := entity.GiveawayType(entity.GiveawayTypePack)
+			if reconciliation.IsSlabTitle(g.Title) {
+				gt = entity.GiveawayType(entity.GiveawayTypeSlab)
+			}
+			writes = append(writes, reconWrite{create: &entity.Event{
+				BreakId: b.Id, Customer: g.Username, IsGiveaway: true, Quantity: 1, GiveawayType: gt,
+			}})
+			touched[b.Id] = true
+			report.Giveaways.ToAdd++
+		}
+	}
+
+	// ---- decide ----
+	if report.Blocking > 0 {
+		return entity.ReconciliationStatusNeedsManual, report, nil
+	}
+
+	// ---- apply, one transaction ----
+	if len(writes) > 0 {
+		tx, err := s.EventRepositorier.BeginTx()
+		if err != nil {
+			return "", report, err
+		}
+		for _, w := range writes {
+			if w.update != nil {
+				err = s.EventRepositorier.UpdateTx(tx, w.update)
+			} else {
+				_, err = s.EventRepositorier.CreateTx(tx, w.create)
+			}
+			if err != nil {
+				tx.Rollback()
+				return "", report, err
+			}
+		}
+		if err := tx.Commit(); err != nil {
+			return "", report, err
+		}
+	}
+	for breakId := range touched {
+		s.EventsCache.Delete(cache.IdToKey(breakId))
+	}
+	return entity.ReconciliationStatusApplied, report, nil
+}
+
+func parseOrderTime(v string) time.Time {
+	t, err := time.Parse(time.RFC3339Nano, v)
+	if err != nil {
+		return time.Time{}
+	}
+	return t
+}

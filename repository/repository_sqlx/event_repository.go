@@ -204,3 +204,36 @@ func (r *EventRepository) GetLastIndex(breakId int64) (int, error) {
 	err := r.DB.Get(&index, `SELECT COALESCE(MAX(index), 0) FROM event WHERE break_id = $1 AND team != '' AND customer != ''`, breakId)
 	return index, err
 }
+
+func (r *EventRepository) BeginTx() (*sqlx.Tx, error) {
+	return r.DB.Beginx()
+}
+
+func (r *EventRepository) UpdateTx(tx *sqlx.Tx, event *entity.Event) error {
+	_, err := tx.NamedExec(`UPDATE event SET
+		break_id = :break_id,
+		index = :index,
+		customer = :customer,
+		price = :price,
+		team = :team,
+		is_giveaway = :is_giveaway,
+		note = :note,
+		quantity = :quantity,
+		giveaway_type = :giveaway_type
+	WHERE id = :id`, event)
+	return err
+}
+
+func (r *EventRepository) CreateTx(tx *sqlx.Tx, event *entity.Event) (int64, error) {
+	var id int64
+	query, args, err := sqlx.Named(`INSERT INTO event (
+		break_id, index, customer, price, team, is_giveaway, note, quantity, is_deleted, giveaway_type
+	) VALUES (
+		:break_id, (SELECT COALESCE(MAX(index), 0) + 1 FROM event WHERE break_id = :break_id), :customer, :price, :team, :is_giveaway, :note, :quantity, :is_deleted, :giveaway_type
+	) RETURNING id`, event)
+	if err != nil {
+		return 0, err
+	}
+	err = tx.Get(&id, tx.Rebind(query), args...)
+	return id, err
+}

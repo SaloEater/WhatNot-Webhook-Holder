@@ -1,6 +1,9 @@
 package repository
 
-import "github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+import (
+	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
+	"github.com/jmoiron/sqlx"
+)
 
 type EventRepositorier interface {
 	GetAllByBreak(int64) ([]*entity.Event, error)
@@ -14,4 +17,8 @@ type EventRepositorier interface {
 	GetAll([]int64) ([]*entity.Event, error)
 	GetAvailableByChannelIDAndTeam(int64, string) (*entity.Event, error)
 	GetLastIndex(int64) (int, error)
+	BeginTx() (*sqlx.Tx, error)
+	UpdateTx(*sqlx.Tx, *entity.Event) error
+	// CreateTx inserts with the event's own Index (unlike Create, which appends at MAX(index)+1).
+	CreateTx(*sqlx.Tx, *entity.Event) (int64, error)
 }

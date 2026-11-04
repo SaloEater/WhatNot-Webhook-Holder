@@ -131,6 +131,8 @@ func main() {
 		SeriesPresetRepositorier:               &repository_sqlx.SeriesPresetRepository{DB: db},
 		LayoutImageRepositorier:                &repository_sqlx.LayoutImageRepository{DB: db},
 		OverlayStateRepositorier:               &repository_sqlx.OverlayStateRepository{DB: db},
+		WhatnotWebhookEventRepositorier:        &repository_sqlx.WhatnotWebhookEventRepository{DB: db},
+		ShowReconciliationRepositorier:         &repository_sqlx.ShowReconciliationRepository{DB: db},
 		BreakCache:                             &breakCache,
 		StreamCache:                            &streamCache,
 		ChannelCache:                           &channelCache,
@@ -153,6 +155,7 @@ func main() {
 
 	handler := corsMiddleware(http.DefaultServeMux)
 
+	http.HandleFunc("POST /webhook/whatnot/{channel_id}", webhook.Whatnot(svc))
 	http.HandleFunc("/webhook/product_sold", routeBuilder.WrapRoute(webhook.ProductSold, api.HttpPost, true))
 
 	http.HandleFunc("/api/channel", routeBuilder.WrapRoute(apiO.GetChannel, api.HttpPost, true))
@@ -172,6 +175,12 @@ func main() {
 	http.HandleFunc("/api/stream/set_active_break", routeBuilder.WrapRoute(apiO.SetActiveBreak, api.HttpPost, true))
 	http.HandleFunc("/api/whatnot/shows", routeBuilder.WrapRoute(apiO.WhatnotShowsList, api.HttpPost, true))
 	http.HandleFunc("/api/stream/set_whatnot_show", routeBuilder.WrapRoute(apiO.SetStreamWhatnotShow, api.HttpPost, true))
+	http.HandleFunc("/api/stream/set_status", routeBuilder.WrapRoute(apiO.StreamSetStatus, api.HttpPost, true))
+	http.HandleFunc("/api/stream/reconcile", routeBuilder.WrapRoute(apiO.StreamReconcile, api.HttpPost, true))
+	http.HandleFunc("/api/stream/reconciliation", routeBuilder.WrapRoute(apiO.StreamReconciliation, api.HttpPost, true))
+	http.HandleFunc("/api/reconciliation/save_manual_map", routeBuilder.WrapRoute(apiO.ReconciliationSaveManualMap, api.HttpPost, true))
+	http.HandleFunc("/api/reconciliation/get", routeBuilder.WrapRoute(apiO.ReconciliationGet, api.HttpPost, true))
+	http.HandleFunc("/api/whatnot/webhook_events", routeBuilder.WrapRoute(apiO.WhatnotWebhookEvents, api.HttpPost, true))
 	http.HandleFunc("/api/stream/whatnot_orders", routeBuilder.WrapRoute(apiO.StreamWhatnotOrders, api.HttpPost, true))
 
 	http.HandleFunc("/api/stream/breaks", routeBuilder.WrapRoute(apiO.GetStreamBreaks, api.HttpPost, true))
