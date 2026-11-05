@@ -1,0 +1,1 @@
+ALTER TABLE whatnot_show ADD COLUMN updated_date TIMESTAMPTZ NULL;

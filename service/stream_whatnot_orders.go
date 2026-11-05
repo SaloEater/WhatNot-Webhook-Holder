@@ -70,7 +70,11 @@ func (s *Service) StreamWhatnotOrders(r *StreamWhatnotOrdersRequest) (*StreamWha
 		if err != nil {
 			return nil, err
 		}
-		if stream.WhatnotShowId == nil || *stream.WhatnotShowId != row.ShowId {
+		show, err := s.streamShow(stream.Id)
+		if err != nil {
+			return nil, err
+		}
+		if show == nil || show.ShowId != row.ShowId {
 			return nil, errors.New("reconciliation belongs to a different show than the one linked to this stream")
 		}
 		snapshot := &StreamWhatnotOrdersResponse{}
@@ -92,14 +96,18 @@ func (s *Service) StreamWhatnotOrders(r *StreamWhatnotOrdersRequest) (*StreamWha
 	if err != nil {
 		return nil, err
 	}
-	if stream.WhatnotShowId == nil || *stream.WhatnotShowId == "" {
+	linkedShow, err := s.streamShow(stream.Id)
+	if err != nil {
+		return nil, err
+	}
+	if linkedShow == nil {
 		return nil, errors.New("stream has no whatnot show")
 	}
 	client, err := s.whatnotClientForChannel(stream.ChannelId)
 	if err != nil {
 		return nil, err
 	}
-	show, err := client.GetShow(*stream.WhatnotShowId)
+	show, err := client.GetShow(linkedShow.ShowId)
 	if err != nil {
 		return nil, err
 	}

@@ -33,6 +33,14 @@ type Show struct {
 	Status           string     `json:"status"`
 	ScheduledStartAt *time.Time `json:"scheduled_start_at"`
 	EndedAt          *time.Time `json:"ended_at"`
+	Description      string     `json:"description"`
+	Visibility       string     `json:"visibility"`
+	// CreatedAt and UpdatedAt stay raw strings so an odd value never fails decoding the whole show.
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	Thumbnail *struct {
+		Url string `json:"url"`
+	} `json:"thumbnail"`
 }
 
 type Order struct {

@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/api"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/api/webhook"
 	go_cache "github.com/SaloEater/WhatNot-Webhook-Holder/cache/go-cache"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/clickup"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/digital_ocean"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/discord"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/repository/repository_sqlx"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/service"
@@ -87,6 +89,7 @@ func main() {
 
 	breakCache := go_cache.CreateCache[*entity.Break](10 * time.Hour)
 	streamCache := go_cache.CreateCache[*entity.Stream](10 * time.Hour)
+	streamShowCache := go_cache.CreateCache[*entity.WhatnotShow](10 * time.Hour)
 	channelCache := go_cache.CreateCache[*entity.Channel](10 * time.Hour)
 	seriesPricesCache := go_cache.CreateCache[[]*entity.SeriesTeamTotal](10 * time.Hour)
 	seriesWithCountCache := go_cache.CreateCache[*entity.SeriesWithCount](10 * time.Hour)
@@ -133,8 +136,12 @@ func main() {
 		OverlayStateRepositorier:               &repository_sqlx.OverlayStateRepository{DB: db},
 		WhatnotWebhookEventRepositorier:        &repository_sqlx.WhatnotWebhookEventRepository{DB: db},
 		ShowReconciliationRepositorier:         &repository_sqlx.ShowReconciliationRepository{DB: db},
+		WhatnotShowRepositorier:                &repository_sqlx.WhatnotShowRepository{DB: db},
+		DiscordFeedChannelRepositorier:         &repository_sqlx.DiscordFeedChannelRepository{DB: db},
+		DiscordShowMessageRepositorier:         &repository_sqlx.DiscordShowMessageRepository{DB: db},
 		BreakCache:                             &breakCache,
 		StreamCache:                            &streamCache,
+		StreamShowCache:                        &streamShowCache,
 		ChannelCache:                           &channelCache,
 		SeriesPricesCache:                      &seriesPricesCache,
 		SeriesWithCountCache:                   &seriesWithCountCache,
@@ -143,6 +150,9 @@ func main() {
 		WidgetSeriesPick2Cache:                 &widgetSeriesPick2Cache,
 		EventsCache:                            &eventsCache,
 		TelegramBot:                            bot,
+		Discord:                                discord.New(os.Getenv("discord_bot_token")),
+		DiscordAlertUserId:                     os.Getenv("discord_alert_user_id"),
+		FrontendUrl:                            strings.TrimRight(strings.TrimSpace(os.Getenv("frontend_url")), "/"),
 		StreamShipmenter:                       clickup.Init(os.Getenv("clickup_api_key"), db),
 		DigitalOceaner:                         digital_ocean.InitDigitalOcean(os.Getenv("spaces_key"), os.Getenv("spaces_secret"), os.Getenv("spaces_endpoint"), os.Getenv("spaces_region"), os.Getenv("spaces_url")),
 	}
@@ -151,11 +161,14 @@ func main() {
 		//svc.RunTelegramBotUpdates(bot)
 	}()
 
+	go svc.RegisterDiscordCommands(os.Getenv("discord_bot_id"))
+
 	apiO := api.API{Service: svc}
 
 	handler := corsMiddleware(http.DefaultServeMux)
 
 	http.HandleFunc("POST /webhook/whatnot/{channel_id}", webhook.Whatnot(svc))
+	http.HandleFunc("POST /discord/interactions", webhook.DiscordInteractions(svc, os.Getenv("discord_public_key")))
 	http.HandleFunc("/webhook/product_sold", routeBuilder.WrapRoute(webhook.ProductSold, api.HttpPost, true))
 
 	http.HandleFunc("/api/channel", routeBuilder.WrapRoute(apiO.GetChannel, api.HttpPost, true))

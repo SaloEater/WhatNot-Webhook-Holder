@@ -102,16 +102,20 @@ func (s *Service) RunShowReconciliation(streamId int64, trigger string, dryRun b
 	if err != nil {
 		return nil, err
 	}
-	if stream.WhatnotShowId == nil || *stream.WhatnotShowId == "" {
+	show, err := s.streamShow(streamId)
+	if err != nil {
+		return nil, err
+	}
+	if show == nil {
 		return nil, fmt.Errorf("stream %d has no whatnot show", streamId)
 	}
 
-	id, started, err := s.StartReconciliation(streamId, *stream.WhatnotShowId, trigger, time.Now().Add(-reconciliationRunningTTL))
+	id, started, err := s.StartReconciliation(streamId, show.ShowId, trigger, time.Now().Add(-reconciliationRunningTTL))
 	if err != nil {
 		return nil, err
 	}
 	if !started {
-		return s.GetReconciliationByStream(streamId, *stream.WhatnotShowId)
+		return s.GetReconciliationByStream(streamId, show.ShowId)
 	}
 
 	status, report, runErr := s.safeReconcile(id, stream, dryRun)
@@ -131,6 +135,26 @@ func (s *Service) RunShowReconciliation(streamId int64, trigger string, dryRun b
 		if err := s.SetStreamStatus(stream, entity.StreamStatusVerified); err != nil {
 			fmt.Println(fmt.Sprintf("reconciliation %d: set stream %d verified: %s", id, streamId, err.Error()))
 		}
+	}
+	// A real run that ends needs_manual or failed moves an ended stream to failed_to_verify and pings once.
+	// Already failed_to_verify stays (no ping); verified is never downgraded; a dry run changes nothing.
+	alert := false
+	if !dryRun && (status == entity.ReconciliationStatusNeedsManual || status == entity.ReconciliationStatusFailed) {
+		if fresh, err := s.StreamRepositorier.Get(streamId); err != nil {
+			fmt.Println(fmt.Sprintf("reconciliation %d: reload stream %d: %s", id, streamId, err.Error()))
+		} else if fresh.Status == entity.StreamStatusEnded {
+			if err := s.setStreamStatusNoSync(fresh, entity.StreamStatusFailedToVerify); err != nil {
+				fmt.Println(fmt.Sprintf("reconciliation %d: set stream %d failed_to_verify: %s", id, streamId, err.Error()))
+			} else {
+				alert = true
+			}
+		}
+	}
+	// Covers needs_manual and failed; the alert variant syncs the message first, then pings, under one lock.
+	if alert {
+		s.syncDiscordShowsOfStreamAsync(streamId, true)
+	} else {
+		s.SyncDiscordShowsOfStreamAsync(streamId)
 	}
 	row, err := s.GetReconciliation(id)
 	if err != nil {

@@ -39,10 +39,14 @@ func (s *Service) StreamReconciliation(r *StreamReconciliationRequest) (*StreamR
 	if err != nil {
 		return nil, err
 	}
-	if stream.WhatnotShowId == nil || *stream.WhatnotShowId == "" {
+	show, err := s.streamShow(stream.Id)
+	if err != nil {
+		return nil, err
+	}
+	if show == nil {
 		return &StreamReconciliationResponse{}, nil
 	}
-	row, err := s.GetReconciliationByStream(r.StreamId, *stream.WhatnotShowId)
+	row, err := s.GetReconciliationByStream(r.StreamId, show.ShowId)
 	if err != nil {
 		return nil, err
 	}
@@ -88,10 +92,14 @@ func (s *Service) ReconciliationSaveManualMap(r *ReconciliationSaveManualMapRequ
 	if err != nil {
 		return nil, err
 	}
-	if stream.WhatnotShowId == nil || *stream.WhatnotShowId == "" {
+	show, err := s.streamShow(stream.Id)
+	if err != nil {
+		return nil, err
+	}
+	if show == nil {
 		return &ReconciliationSaveManualMapResponse{Success: true}, nil
 	}
-	if err := s.SetReconciliationManualMap(r.StreamId, *stream.WhatnotShowId, encoded); err != nil {
+	if err := s.SetReconciliationManualMap(r.StreamId, show.ShowId, encoded); err != nil {
 		return nil, err
 	}
 	return &ReconciliationSaveManualMapResponse{Success: true}, nil

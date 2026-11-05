@@ -16,10 +16,19 @@ type SetStreamStatusResponse struct {
 	Success bool `json:"success"`
 }
 
-// SetStreamStatus writes status, keeps is_ended in sync (ended|verified => true) and refreshes the cache.
+// SetStreamStatus writes status, keeps is_ended in sync (ended|failed_to_verify|verified => true), refreshes the cache
+// and syncs the Discord messages of the stream's shows.
 func (s *Service) SetStreamStatus(stream *entity.Stream, status string) error {
+	if err := s.setStreamStatusNoSync(stream, status); err != nil {
+		return err
+	}
+	s.SyncDiscordShowsOfStreamAsync(stream.Id)
+	return nil
+}
+
+func (s *Service) setStreamStatusNoSync(stream *entity.Stream, status string) error {
 	stream.Status = status
-	stream.IsEnded = status == entity.StreamStatusEnded || status == entity.StreamStatusVerified
+	stream.IsEnded = status == entity.StreamStatusEnded || status == entity.StreamStatusFailedToVerify || status == entity.StreamStatusVerified
 	if err := s.StreamRepositorier.Update(stream); err != nil {
 		return err
 	}

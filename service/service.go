@@ -2,6 +2,7 @@ package service
 
 import (
 	cacheInterface "github.com/SaloEater/WhatNot-Webhook-Holder/cache"
+	"github.com/SaloEater/WhatNot-Webhook-Holder/discord"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/entity"
 	"github.com/SaloEater/WhatNot-Webhook-Holder/repository"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -37,8 +38,13 @@ type Service struct {
 	repository.OverlayStateRepositorier
 	repository.WhatnotWebhookEventRepositorier
 	repository.ShowReconciliationRepositorier
-	BreakCache                   cacheInterface.Cache[*entity.Break]
-	StreamCache                  cacheInterface.Cache[*entity.Stream]
+	repository.WhatnotShowRepositorier
+	repository.DiscordFeedChannelRepositorier
+	repository.DiscordShowMessageRepositorier
+	BreakCache  cacheInterface.Cache[*entity.Break]
+	StreamCache cacheInterface.Cache[*entity.Stream]
+	// StreamShowCache is keyed by stream id; a nil value caches "this stream has no show".
+	StreamShowCache              cacheInterface.Cache[*entity.WhatnotShow]
 	ChannelCache                 cacheInterface.Cache[*entity.Channel]
 	SeriesPricesCache            cacheInterface.Cache[[]*entity.SeriesTeamTotal]
 	SeriesWithCountCache         cacheInterface.Cache[*entity.SeriesWithCount]
@@ -50,6 +56,12 @@ type Service struct {
 	// would mutate the cached slice in place.
 	EventsCache cacheInterface.Cache[[]*entity.Event]
 	TelegramBot *tgbotapi.BotAPI
+	// Discord is never nil in main; Discord.Enabled() is false without a bot token.
+	Discord *discord.Client
+	// DiscordAlertUserId is the numeric Discord user pinged on verification failures; empty = no ping.
+	DiscordAlertUserId string
+	// FrontendUrl is the admin UI base URL (no trailing slash) for Discord links; empty = no such links.
+	FrontendUrl string
 	StreamShipmenter
 	DigitalOceaner
 }
