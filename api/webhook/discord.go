@@ -35,14 +35,6 @@ func DiscordInteractions(svc *service.Service, publicKey string) http.HandlerFun
 			responseType = discord.ResponseTypePong
 		case discord.InteractionTypeMessageComponent:
 			svc.HandleDiscordViewButton(interaction.Data.CustomId)
-		case discord.InteractionTypeCommand:
-			svc.HandleDiscordCommand(interaction)
-			w.Header().Set("Content-Type", "application/json")
-			// Deferred private reply (flags 64 = ephemeral); the command goroutine replaces it with the result.
-			if _, err := fmt.Fprintf(w, `{"type":%d,"data":{"flags":64}}`, discord.ResponseTypeDeferredMessage); err != nil {
-				fmt.Println("discord interaction: write response: " + err.Error())
-			}
-			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		if _, err := fmt.Fprintf(w, `{"type":%d}`, responseType); err != nil {

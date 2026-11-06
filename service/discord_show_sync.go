@@ -102,6 +102,8 @@ func (s *Service) sendDiscordAlert(ref *discordMessageRef) error {
 }
 
 // syncDiscordShowLocked returns the show message's location when one exists after the sync (nil otherwise).
+// A show without a message gets one only once it is displayed as live or later; a planned show is left alone,
+// and a stored message id that Discord reports gone is cleared for a planned show instead of recreated.
 func (s *Service) syncDiscordShowLocked(whatnotShowId int64) (*discordMessageRef, error) {
 	show, err := s.WhatnotShowRepositorier.Get(whatnotShowId)
 	if err != nil || show == nil {
@@ -139,7 +141,11 @@ func (s *Service) syncDiscordShowLocked(whatnotShowId int64) (*discordMessageRef
 		return nil, err
 	}
 	payload := renderDiscordShow(in)
+	planned := showDisplayState(in.Show, in.Streams) == showStatePlanned
 
+	if !hasMessage && planned {
+		return nil, nil
+	}
 	if hasMessage {
 		err := s.Discord.EditMessage(postedIn, *msg.DiscordMessageId, payload)
 		if err == nil {
@@ -148,6 +154,9 @@ func (s *Service) syncDiscordShowLocked(whatnotShowId int64) (*discordMessageRef
 		}
 		if !errors.Is(err, discord.ErrMessageGone) {
 			return &discordMessageRef{ChannelId: postedIn, MessageId: *msg.DiscordMessageId, Input: in}, err
+		}
+		if planned {
+			return nil, s.DiscordShowMessageRepositorier.SetMessage(show.Id, postedIn, "")
 		}
 	}
 	messageId, err := s.Discord.CreateMessage(feed.DiscordChannelId, payload)
@@ -160,6 +169,30 @@ func (s *Service) syncDiscordShowLocked(whatnotShowId int64) (*discordMessageRef
 	}
 	s.pinDiscordShowIfLive(show.Id, feed.DiscordChannelId, messageId, in, false)
 	return ref, nil
+}
+
+// ClearDiscordCommands registers an empty command list in every server the bot is in, which removes any
+// previously registered slash command. Silent no-op without the bot token or application id; failures are only
+// logged. Meant to run in a goroutine at startup.
+func (s *Service) ClearDiscordCommands(applicationId string) {
+	defer func() {
+		if r := recover(); r != nil {
+			discordLogf("clear commands: panic: %v", r)
+		}
+	}()
+	if !s.discordEnabled() || applicationId == "" {
+		return
+	}
+	guilds, err := s.Discord.ListGuildIds()
+	if err != nil {
+		discordLogf("clear commands: %s", err.Error())
+		return
+	}
+	for _, g := range guilds {
+		if err := s.Discord.SetGuildCommands(applicationId, g, []map[string]any{}); err != nil {
+			discordLogf("clear commands in guild %s: %s", g, err.Error())
+		}
+	}
 }
 
 // pinDiscordShowIfLive pins the message once while the show is displayed as live, then removes the system notice.

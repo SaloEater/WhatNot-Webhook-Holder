@@ -4,11 +4,9 @@ import "encoding/json"
 
 const (
 	InteractionTypePing             = 1
-	InteractionTypeCommand          = 2
 	InteractionTypeMessageComponent = 3
 
 	ResponseTypePong              = 1
-	ResponseTypeDeferredMessage   = 5
 	ResponseTypeDeferredUpdateMsg = 6
 	ComponentTypeActionRow        = 1
 	ComponentTypeButton           = 2
@@ -93,16 +91,8 @@ type Component struct {
 
 // Interaction is the part of an incoming interaction this backend reads.
 type Interaction struct {
-	Type          int    `json:"type"`
-	ChannelId     string `json:"channel_id"`
-	Token         string `json:"token"`
-	ApplicationId string `json:"application_id"`
-	Data          struct {
+	Type int `json:"type"`
+	Data struct {
 		CustomId string `json:"custom_id"`
-		Name     string `json:"name"`
-		Options  []struct {
-			Name  string `json:"name"`
-			Value any    `json:"value"`
-		} `json:"options"`
 	} `json:"data"`
 }

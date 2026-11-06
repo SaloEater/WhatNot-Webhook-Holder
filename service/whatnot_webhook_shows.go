@@ -87,6 +87,9 @@ func (s *Service) onWhatnotShowCreated(ev *entity.WhatnotWebhookEvent, data json
 	if err := s.WhatnotShowRepositorier.Upsert(show); err != nil {
 		return err
 	}
+	if err := s.stampShowStatusTime(show.Id, webhookEventTime(ev)); err != nil {
+		return err
+	}
 	s.invalidateShowStreams(show.Id)
 	s.syncDiscordShowAsync(show.Id)
 	return nil
@@ -100,6 +103,9 @@ func (s *Service) onWhatnotShowUpdated(ev *entity.WhatnotWebhookEvent, data json
 	}
 	applied, err := s.WhatnotShowRepositorier.UpsertOverwrite(show)
 	if err != nil || !applied {
+		return err
+	}
+	if err := s.stampShowStatusTime(show.Id, webhookEventTime(ev)); err != nil {
 		return err
 	}
 	s.invalidateShowStreams(show.Id)
@@ -175,14 +181,14 @@ func (s *Service) onWhatnotShowEnded(ev *entity.WhatnotWebhookEvent, data json.R
 	return firstErr
 }
 
-// onWhatnotShowCancelled does nothing for a show we have no row for: the payload only carries the id.
+// onWhatnotShowCancelled marks the show cancelled; an unknown show gets its row first (the payload only carries the id).
 func (s *Service) onWhatnotShowCancelled(ev *entity.WhatnotWebhookEvent, data json.RawMessage) error {
 	showId, err := webhookShowId(data)
 	if err != nil {
 		return err
 	}
-	show, err := s.WhatnotShowRepositorier.GetByShowId(ev.ChannelId, showId)
-	if err != nil || show == nil {
+	show, err := s.ensureWhatnotShow(ev.ChannelId, showId)
+	if err != nil {
 		return err
 	}
 	if err := s.WhatnotShowRepositorier.SetStatus(show.Id, entity.WhatnotShowStatusCancelled, nil, nil); err != nil {
